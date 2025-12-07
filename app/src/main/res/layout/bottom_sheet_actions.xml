@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="20dp">
 
+    <!-- Header -->
     <TextView
         android:id="@+id/tvTitle"
         android:layout_width="wrap_content"
@@ -13,124 +15,169 @@
         android:textStyle="bold"
         android:layout_marginBottom="16dp" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="App Control"
-        android:textColor="@color/on_surface_secondary"
-        android:textSize="12sp"
-        android:layout_marginBottom="8dp" />
-
+    <!-- Action Selection View -->
     <LinearLayout
+        android:id="@+id/layoutActions"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
-        <Button
-            android:id="@+id/btnFreeze"
-            android:layout_width="0dp"
+        <!-- Actions Grid -->
+        <GridLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/action_freeze"
-            style="@style/Widget.Material3.Button.OutlinedButton" />
+            android:columnCount="3"
+            android:useDefaultMargins="true">
 
-        <Button
-            android:id="@+id/btnUnfreeze"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="8dp"
-            android:text="@string/action_unfreeze"
-            style="@style/Widget.Material3.Button.OutlinedButton" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnForceStop"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:text="@string/action_force_stop"
+                android:textSize="10sp"
+                app:icon="@drawable/ic_stop"
+                app:iconSize="20dp"
+                app:iconGravity="top"
+                app:iconPadding="2dp"
+                style="@style/Widget.Material3.Button.TonalButton" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnFreeze"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:text="@string/action_freeze"
+                android:textSize="10sp"
+                app:icon="@drawable/ic_freeze"
+                app:iconSize="20dp"
+                app:iconGravity="top"
+                app:iconPadding="2dp"
+                style="@style/Widget.Material3.Button.TonalButton" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnUnfreeze"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:text="@string/action_unfreeze"
+                android:textSize="10sp"
+                app:icon="@drawable/ic_check_circle"
+                app:iconSize="20dp"
+                app:iconGravity="top"
+                app:iconPadding="2dp"
+                style="@style/Widget.Material3.Button.TonalButton" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRestrictBg"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:text="@string/action_restrict_bg"
+                android:textSize="10sp"
+                app:icon="@drawable/ic_battery_alert"
+                app:iconSize="20dp"
+                app:iconGravity="top"
+                app:iconPadding="2dp"
+                style="@style/Widget.Material3.Button.TonalButton" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAllowBg"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:text="@string/action_allow_bg"
+                android:textSize="10sp"
+                app:icon="@drawable/ic_check_circle"
+                app:iconSize="20dp"
+                app:iconGravity="top"
+                app:iconPadding="2dp"
+                style="@style/Widget.Material3.Button.TonalButton" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnClearCache"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:text="@string/action_clear_cache"
+                android:textSize="10sp"
+                app:icon="@drawable/ic_cleaning"
+                app:iconSize="20dp"
+                app:iconGravity="top"
+                app:iconPadding="2dp"
+                style="@style/Widget.Material3.Button.TonalButton" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnClearData"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:text="@string/action_clear_data"
+                android:textSize="10sp"
+                android:textColor="@color/warning_color"
+                app:icon="@drawable/ic_delete_sweep"
+                app:iconSize="20dp"
+                app:iconGravity="top"
+                app:iconPadding="2dp"
+                app:iconTint="@color/warning_color"
+                style="@style/Widget.Material3.Button.TonalButton" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnUninstall"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:text="@string/action_uninstall"
+                android:textSize="10sp"
+                android:textColor="@color/status_negative"
+                app:icon="@drawable/ic_delete"
+                app:iconSize="20dp"
+                app:iconGravity="top"
+                app:iconPadding="2dp"
+                app:iconTint="@color/status_negative"
+                style="@style/Widget.Material3.Button.TonalButton" />
+
+        </GridLayout>
     </LinearLayout>
 
+    <!-- Confirmation View (hidden by default) -->
     <LinearLayout
+        android:id="@+id/layoutConfirm"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:orientation="horizontal">
+        android:orientation="vertical"
+        android:visibility="gone">
 
-        <Button
-            android:id="@+id/btnUninstall"
-            android:layout_width="0dp"
+        <TextView
+            android:id="@+id/tvConfirmMessage"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/action_uninstall"
-            style="@style/Widget.Material3.Button.OutlinedButton" />
+            android:textSize="15sp"
+            android:lineSpacingExtra="4dp"
+            android:layout_marginBottom="20dp" />
 
-        <Button
-            android:id="@+id/btnForceStop"
-            android:layout_width="0dp"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="8dp"
-            android:text="Force Stop"
-            style="@style/Widget.Material3.Button.OutlinedButton" />
-    </LinearLayout>
+            android:orientation="horizontal">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Battery Control"
-        android:textColor="@color/on_surface_secondary"
-        android:textSize="12sp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="8dp" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnNo"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/confirm_no"
+                style="@style/Widget.Material3.Button.OutlinedButton" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/btnRestrictBg"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/action_restrict_bg"
-            style="@style/Widget.Material3.Button.OutlinedButton" />
-
-        <Button
-            android:id="@+id/btnAllowBg"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="8dp"
-            android:text="@string/action_allow_bg"
-            style="@style/Widget.Material3.Button.OutlinedButton" />
-    </LinearLayout>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Data"
-        android:textColor="@color/on_surface_secondary"
-        android:textSize="12sp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="8dp" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/btnClearCache"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/action_clear_cache"
-            style="@style/Widget.Material3.Button.OutlinedButton" />
-
-        <Button
-            android:id="@+id/btnClearData"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="8dp"
-            android:text="@string/action_clear_data"
-            android:textColor="@color/warning_color"
-            style="@style/Widget.Material3.Button.OutlinedButton" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnYes"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:text="@string/confirm_yes"
+                style="@style/Widget.Material3.Button.TonalButton" />
+        </LinearLayout>
     </LinearLayout>
 
 </LinearLayout>

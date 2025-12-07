@@ -14,6 +14,8 @@ class ActionBottomSheet : BottomSheetDialogFragment() {
     private val binding get() = _binding!!
     
     var onActionSelected: ((Action) -> Unit)? = null
+    private var selectedAction: Action? = null
+    private var selectedCount = 0
     
     enum class Action {
         FREEZE, UNFREEZE, UNINSTALL, FORCE_STOP,
@@ -29,47 +31,62 @@ class ActionBottomSheet : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         
-        val selectedCount = arguments?.getInt(ARG_SELECTED_COUNT, 0) ?: 0
+        selectedCount = arguments?.getInt(ARG_SELECTED_COUNT, 0) ?: 0
         binding.tvTitle.text = getString(R.string.action_title, selectedCount)
         
-        binding.btnFreeze.setOnClickListener { 
-            onActionSelected?.invoke(Action.FREEZE)
-            dismiss()
+        setupActionButtons()
+        setupConfirmButtons()
+    }
+    
+    private fun setupActionButtons() {
+        binding.btnForceStop.setOnClickListener { showConfirmation(Action.FORCE_STOP) }
+        binding.btnFreeze.setOnClickListener { showConfirmation(Action.FREEZE) }
+        binding.btnUnfreeze.setOnClickListener { showConfirmation(Action.UNFREEZE) }
+        binding.btnRestrictBg.setOnClickListener { showConfirmation(Action.RESTRICT_BACKGROUND) }
+        binding.btnAllowBg.setOnClickListener { showConfirmation(Action.ALLOW_BACKGROUND) }
+        binding.btnClearCache.setOnClickListener { showConfirmation(Action.CLEAR_CACHE) }
+        binding.btnClearData.setOnClickListener { showConfirmation(Action.CLEAR_DATA) }
+        binding.btnUninstall.setOnClickListener { showConfirmation(Action.UNINSTALL) }
+    }
+    
+    private fun setupConfirmButtons() {
+        binding.btnNo.setOnClickListener {
+            // Go back to action selection
+            binding.layoutConfirm.visibility = View.GONE
+            binding.layoutActions.visibility = View.VISIBLE
+            binding.tvTitle.text = getString(R.string.action_title, selectedCount)
+            selectedAction = null
         }
         
-        binding.btnUnfreeze.setOnClickListener { 
-            onActionSelected?.invoke(Action.UNFREEZE)
-            dismiss()
+        binding.btnYes.setOnClickListener {
+            selectedAction?.let { action ->
+                onActionSelected?.invoke(action)
+                dismiss()
+            }
         }
+    }
+    
+    private fun showConfirmation(action: Action) {
+        selectedAction = action
         
-        binding.btnUninstall.setOnClickListener { 
-            onActionSelected?.invoke(Action.UNINSTALL)
-            dismiss()
-        }
+        val actionName = getActionDisplayName(action)
+        binding.tvTitle.text = getString(R.string.confirm_title)
+        binding.tvConfirmMessage.text = "You are about to $actionName on $selectedCount app(s).\n\nContinue?"
         
-        binding.btnForceStop.setOnClickListener { 
-            onActionSelected?.invoke(Action.FORCE_STOP)
-            dismiss()
-        }
-        
-        binding.btnRestrictBg.setOnClickListener { 
-            onActionSelected?.invoke(Action.RESTRICT_BACKGROUND)
-            dismiss()
-        }
-        
-        binding.btnAllowBg.setOnClickListener { 
-            onActionSelected?.invoke(Action.ALLOW_BACKGROUND)
-            dismiss()
-        }
-        
-        binding.btnClearCache.setOnClickListener { 
-            onActionSelected?.invoke(Action.CLEAR_CACHE)
-            dismiss()
-        }
-        
-        binding.btnClearData.setOnClickListener { 
-            onActionSelected?.invoke(Action.CLEAR_DATA)
-            dismiss()
+        binding.layoutActions.visibility = View.GONE
+        binding.layoutConfirm.visibility = View.VISIBLE
+    }
+    
+    private fun getActionDisplayName(action: Action): String {
+        return when (action) {
+            Action.FREEZE -> "Freeze"
+            Action.UNFREEZE -> "Unfreeze"
+            Action.UNINSTALL -> "Uninstall"
+            Action.FORCE_STOP -> "Force Stop"
+            Action.RESTRICT_BACKGROUND -> "Restrict Background"
+            Action.ALLOW_BACKGROUND -> "Allow Background"
+            Action.CLEAR_CACHE -> "Clear Cache"
+            Action.CLEAR_DATA -> "Clear Data"
         }
     }
     
