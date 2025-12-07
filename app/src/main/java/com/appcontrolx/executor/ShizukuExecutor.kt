@@ -1,33 +1,75 @@
 package com.appcontrolx.executor
 
+import android.content.ComponentName
+import android.content.ServiceConnection
+import android.os.IBinder
+import com.appcontrolx.BuildConfig
+import com.appcontrolx.IShellService
 import rikka.shizuku.Shizuku
-import java.io.BufferedReader
-import java.io.DataOutputStream
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 class ShizukuExecutor : CommandExecutor {
     
-    override fun execute(command: String): Result<String> {
-        if (!Shizuku.pingBinder()) {
-            return Result.failure(Exception("Shizuku not available"))
+    private var shellService: IShellService? = null
+    private val serviceLatch = CountDownLatch(1)
+    
+    private val userServiceArgs = Shizuku.UserServiceArgs(
+        ComponentName(BuildConfig.APPLICATION_ID, ShellService::class.java.name)
+    )
+        .daemon(false)
+        .processNameSuffix("shell")
+        .debuggable(BuildConfig.DEBUG)
+        .version(BuildConfig.VERSION_CODE)
+    
+    private val serviceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            shellService = IShellService.Stub.asInterface(service)
+            serviceLatch.countDown()
         }
         
+        override fun onServiceDisconnected(name: ComponentName?) {
+            shellService = null
+        }
+    }
+    
+    init {
+        bindService()
+    }
+    
+    private fun bindService() {
+        if (!Shizuku.pingBinder()) return
+        try {
+            Shizuku.bindUserService(userServiceArgs, serviceConnection)
+        } catch (e: Exception) {
+            // Shizuku not ready
+        }
+    }
+    
+    fun unbindService() {
+        try {
+            Shizuku.unbindUserService(userServiceArgs, serviceConnection, true)
+        } catch (e: Exception) {
+            // Ignore
+        }
+        shellService = null
+    }
+    
+    override fun execute(command: String): Result<String> {
+        // Wait for service to connect (max 3 seconds)
+        if (shellService == null) {
+            serviceLatch.await(3, TimeUnit.SECONDS)
+        }
+        
+        val service = shellService
+            ?: return Result.failure(Exception("Shizuku service not available"))
+        
         return try {
-            // Use Shizuku's remote process to execute shell commands
-            val process = Shizuku.newProcess(arrayOf("sh", "-c", command), null, null)
-            
-            val output = process.inputStream.bufferedReader().use(BufferedReader::readText)
-            val error = process.errorStream.bufferedReader().use(BufferedReader::readText)
-            val exitCode = process.waitFor()
-            
-            if (exitCode == 0) {
-                Result.success(output.trim())
+            val output = service.exec(command)
+            if (output.startsWith("ERROR:")) {
+                Result.failure(Exception(output.removePrefix("ERROR:")))
             } else {
-                val errorMsg = error.ifBlank { output }.trim()
-                if (errorMsg.isNotBlank()) {
-                    Result.failure(Exception(errorMsg))
-                } else {
-                    Result.failure(Exception("Command failed with exit code $exitCode"))
-                }
+                Result.success(output)
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -36,8 +78,7 @@ class ShizukuExecutor : CommandExecutor {
     
     override fun executeBatch(commands: List<String>): Result<Unit> {
         for (cmd in commands) {
-            val result = execute(cmd)
-            // Continue even if some commands fail (best effort)
+            execute(cmd) // Best effort, continue on failure
         }
         return Result.success(Unit)
     }
