@@ -259,6 +259,17 @@
     <string name="activity_launcher_count">%1$d apps • %2$d activities</string>
     <string name="search_hint">Search apps or activities…</string>
     <string name="btn_expand">Expand</string>
+    
+    <!-- Accessibility -->
+    <string name="a11y_app_selected">%s selected</string>
+    <string name="a11y_app_deselected">%s deselected</string>
+    <string name="a11y_expand_activities">Expand to show activities</string>
+    <string name="a11y_collapse_activities">Collapse activities</string>
+    <string name="a11y_launch_activity">Launch %s</string>
+    <string name="a11y_app_frozen">App is frozen</string>
+    <string name="a11y_app_running">App is running</string>
+    <string name="a11y_app_stopped">App is stopped</string>
+    <string name="a11y_bg_restricted">Background restricted</string>
     <string name="tools_not_available">This setting is not available on your device</string>
     <string name="tools_navigate_manually">Please navigate manually in Settings</string>
     

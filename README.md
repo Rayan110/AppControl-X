@@ -57,37 +57,58 @@ Output: `app/build/outputs/apk/debug/app-debug.apk`
 
 ## Architecture
 
+The app follows **MVVM (Model-View-ViewModel)** architecture with **Repository pattern** and uses **Hilt** for dependency injection.
+
 ```
 com.appcontrolx/
+├── data/
+│   ├── local/          # Room Database, DataStore
+│   └── repository/     # Data repositories
+├── di/                 # Hilt modules
 ├── executor/           # Command execution (Root/Shizuku)
 ├── model/              # Data classes
+├── presentation/
+│   └── viewmodel/      # ViewModels
 ├── rollback/           # State management & rollback
 ├── service/            # Business logic
 ├── ui/                 # Activities, Fragments, Adapters
-└── utils/              # Helpers & validators
+├── utils/              # Helpers & validators
+└── worker/             # WorkManager workers
 ```
 
 ### Key Components
 
 | Component | Description |
 |-----------|-------------|
+| `AppRepository` | Central data access layer |
+| `AppListViewModel` | UI state management for app list |
 | `PermissionBridge` | Detects available execution mode (Root/Shizuku/None) |
-| `RootExecutor` | Executes commands via libsu |
+| `RootExecutor` | Executes commands via libsu with security validation |
 | `ShizukuExecutor` | Executes commands via Shizuku UserService |
 | `BatteryPolicyManager` | Manages appops and battery settings |
-| `XiaomiBridge` | Handles MIUI/HyperOS specific features |
 | `RollbackManager` | Saves snapshots and restores previous state |
 | `SafetyValidator` | Prevents actions on critical system apps |
+| `SettingsDataStore` | Persistent settings with DataStore |
+| `AppDatabase` | Room database for action logs |
 
 ## Tech Stack
 
-- **Language**: Kotlin
+- **Language**: Kotlin 1.9
+- **Architecture**: MVVM + Repository Pattern
+- **DI**: Hilt 2.50
 - **UI**: Material 3, ViewBinding
+- **Database**: Room 2.6
+- **Preferences**: DataStore
+- **Async**: Coroutines + Flow
 - **Navigation**: Jetpack Navigation Component
+- **Background**: WorkManager
 - **Root**: [libsu](https://github.com/topjohnwu/libsu) by topjohnwu
 - **Shizuku**: [Shizuku-API](https://github.com/RikkaApps/Shizuku-API) by RikkaApps
+- **Logging**: Timber
+- **Crash Reporting**: Firebase Crashlytics
 - **Build**: Gradle 8.2, AGP 8.2.0
 - **CI/CD**: GitHub Actions
+- **Testing**: JUnit, Mockito, Turbine
 
 ## Commands Reference
 
