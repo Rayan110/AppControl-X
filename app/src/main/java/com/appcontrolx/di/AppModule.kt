@@ -1,8 +1,6 @@
 package com.appcontrolx.di
 
 import android.content.Context
-import com.appcontrolx.data.repository.AppRepository
-import com.appcontrolx.data.repository.AppRepositoryImpl
 import com.appcontrolx.executor.CommandExecutor
 import com.appcontrolx.executor.RootExecutor
 import com.appcontrolx.model.ExecutionMode
@@ -50,11 +48,4 @@ object AppModule {
     fun provideAppFetcher(
         @ApplicationContext context: Context
     ): AppFetcher = AppFetcher(context)
-    
-    @Provides
-    @Singleton
-    fun provideAppRepository(
-        appFetcher: AppFetcher,
-        policyManager: BatteryPolicyManager?
-    ): AppRepository = AppRepositoryImpl(appFetcher, policyManager)
 }
