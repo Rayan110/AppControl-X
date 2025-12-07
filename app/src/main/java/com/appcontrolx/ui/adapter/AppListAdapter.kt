@@ -1,6 +1,7 @@
 package com.appcontrolx.ui.adapter
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -9,7 +10,8 @@ import com.appcontrolx.databinding.ItemAppBinding
 import com.appcontrolx.model.AppInfo
 
 class AppListAdapter(
-    private val onSelectionChanged: (Int) -> Unit
+    private val onSelectionChanged: (Int) -> Unit,
+    private val onInfoClick: (AppInfo) -> Unit
 ) : ListAdapter<AppInfo, AppListAdapter.AppViewHolder>(AppDiffCallback()) {
     
     private val selectedPackages = mutableSetOf<String>()
@@ -64,8 +66,12 @@ class AppListAdapter(
                 checkbox.setOnCheckedChangeListener(null)
                 checkbox.isChecked = selectedPackages.contains(app.packageName)
                 
-                // Disabled state
+                // Disabled/Frozen state
                 root.alpha = if (app.isEnabled) 1f else 0.5f
+                
+                // Status badges
+                tvStatusDisabled.visibility = if (!app.isEnabled) View.VISIBLE else View.GONE
+                statusContainer.visibility = if (!app.isEnabled) View.VISIBLE else View.GONE
                 
                 checkbox.setOnCheckedChangeListener { _, _ ->
                     toggleSelection(app.packageName)
@@ -73,6 +79,10 @@ class AppListAdapter(
                 
                 root.setOnClickListener {
                     checkbox.isChecked = !checkbox.isChecked
+                }
+                
+                btnInfo.setOnClickListener {
+                    onInfoClick(app)
                 }
             }
         }

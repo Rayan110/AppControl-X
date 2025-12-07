@@ -7,6 +7,7 @@
     <color name="status_positive">#4CAF50</color>
     <color name="status_negative">#F44336</color>
     <color name="status_neutral">#9E9E9E</color>
+    <color name="status_frozen">#2196F3</color>
     
     <color name="background">#FAFAFA</color>
     <color name="surface">#FFFFFF</color>

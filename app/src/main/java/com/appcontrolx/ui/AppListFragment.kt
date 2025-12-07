@@ -77,12 +77,25 @@ class AppListFragment : Fragment() {
     }
     
     private fun setupRecyclerView() {
-        adapter = AppListAdapter { selectedCount ->
-            updateSelectionUI(selectedCount)
-        }
+        adapter = AppListAdapter(
+            onSelectionChanged = { selectedCount ->
+                updateSelectionUI(selectedCount)
+            },
+            onInfoClick = { app ->
+                showAppDetail(app)
+            }
+        )
         binding.recyclerView.layoutManager = LinearLayoutManager(context)
         binding.recyclerView.adapter = adapter
         binding.recyclerView.setHasFixedSize(true)
+    }
+    
+    private fun showAppDetail(app: AppInfo) {
+        val bottomSheet = AppDetailBottomSheet.newInstance(app)
+        bottomSheet.onActionCompleted = {
+            loadApps()
+        }
+        bottomSheet.show(childFragmentManager, AppDetailBottomSheet.TAG)
     }
     
     private fun setupChips() {
