@@ -6,19 +6,35 @@ object SafetyValidator {
     private val CRITICAL_PACKAGES = setOf(
         // Self-protection
         "com.appcontrolx",
-        // Android Core
+        // Android Core System
+        "android",
         "com.android.systemui",
         "com.android.settings",
         "com.android.phone",
         "com.android.server.telecom",
         "com.android.providers.settings",
         "com.android.providers.contacts",
+        "com.android.providers.telephony",
+        "com.android.providers.media",
+        "com.android.providers.downloads",
         "com.android.inputmethod.latin",
         "com.android.launcher3",
+        "com.android.packageinstaller",
+        "com.android.permissioncontroller",
+        "com.android.shell",
+        "com.android.se",
+        "com.android.nfc",
+        "com.android.bluetooth",
+        "com.android.wifi",
+        // Google Core
         "com.google.android.gms",
         "com.google.android.gsf",
         "com.android.vending",
-        "android"
+        "com.google.android.packageinstaller",
+        // Root/Shizuku
+        "com.topjohnwu.magisk",
+        "rikka.shizuku",
+        "moe.shizuku.privileged.api"
     )
     
     // Apps yang HANYA BOLEH di-force stop (tidak boleh freeze/uninstall/disable)
