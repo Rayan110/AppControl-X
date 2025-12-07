@@ -271,6 +271,11 @@
     <string name="badge_running">RUNNING</string>
     <string name="badge_stopped">STOPPED</string>
     <string name="badge_restricted">BG RESTRICTED</string>
+    <string name="badge_exported">EXPORTED</string>
+    
+    <!-- Errors -->
+    <string name="error_root_not_available">Root access not available. Please grant root permission.</string>
+    <string name="error_shizuku_not_available">Shizuku not available. Please start Shizuku app first.</string>
     
     <!-- Batch Progress -->
     <string name="batch_progress">%1$d / %2$d</string>

@@ -30,32 +30,65 @@ class ToolsFragment : Fragment() {
     }
     
     private fun setupHiddenSettings() {
-        // Display Settings
+        // Display Settings - Extra Dim (Android 12+)
         binding.itemExtraDim.setOnClickListener {
-            openHiddenSetting("com.android.settings", "com.android.settings.display.ReduceBrightColorsPreferenceFragment")
+            val intents = listOf(
+                // Android 12+ Extra Dim
+                "com.android.settings" to "com.android.settings.display.ReduceBrightColorsPreferenceFragment",
+                // Alternative
+                "com.android.settings" to "com.android.settings.Settings\$ReduceBrightColorsSettingsActivity"
+            )
+            tryOpenSettings(intents)
         }
         
-        // Notification Settings
+        // Notification Log - Xiaomi/Universal
         binding.itemNotificationLog.setOnClickListener {
-            openHiddenSetting("com.android.settings", "com.android.settings.notification.NotificationStation")
+            val intents = listOf(
+                // AOSP Notification Log
+                "com.android.settings" to "com.android.settings.notification.NotificationStation",
+                // Xiaomi MIUI
+                "com.miui.securitycenter" to "com.miui.notificationlog.ui.main.NotificationLogActivity",
+                // Alternative AOSP
+                "com.android.settings" to "com.android.settings.Settings\$NotificationStationActivity"
+            )
+            tryOpenSettings(intents)
         }
         
+        // Notification History
         binding.itemNotificationHistory.setOnClickListener {
-            openHiddenSetting("com.android.settings", "com.android.settings.notification.history.NotificationHistoryActivity")
+            val intents = listOf(
+                "com.android.settings" to "com.android.settings.notification.history.NotificationHistoryActivity",
+                "com.android.settings" to "com.android.settings.Settings\$NotificationHistoryActivity"
+            )
+            tryOpenSettings(intents)
         }
         
-        // Battery Settings
+        // Battery Optimization
         binding.itemBatteryOptimization.setOnClickListener {
             try {
                 startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
             } catch (e: Exception) {
-                openHiddenSetting("com.android.settings", "com.android.settings.Settings\$HighPowerApplicationsActivity")
+                val intents = listOf(
+                    "com.android.settings" to "com.android.settings.Settings\$HighPowerApplicationsActivity",
+                    "com.android.settings" to "com.android.settings.fuelgauge.PowerUsageSummary"
+                )
+                tryOpenSettings(intents)
             }
         }
         
-        // Performance Settings
+        // Performance Mode - Xiaomi/MIUI/HyperOS
         binding.itemPerformanceMode.setOnClickListener {
-            openHiddenSetting("com.android.settings", "com.android.settings.Settings\$GameDashboardActivity")
+            val intents = listOf(
+                // Xiaomi Game Turbo
+                "com.miui.securitycenter" to "com.miui.gamebooster.ui.GameBoosterMainActivity",
+                // MIUI Performance Mode
+                "com.miui.powerkeeper" to "com.miui.powerkeeper.ui.HiddenAppsConfigActivity",
+                // Android Game Dashboard
+                "com.android.settings" to "com.android.settings.Settings\$GameDashboardActivity",
+                // Samsung Game Launcher
+                "com.samsung.android.game.gamehome" to "com.samsung.android.game.gamehome.MainActivity"
+            )
+            tryOpenSettings(intents)
         }
         
         // Developer Options
@@ -63,14 +96,34 @@ class ToolsFragment : Fragment() {
             try {
                 startActivity(Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS))
             } catch (e: Exception) {
-                showError()
+                openHiddenSetting("com.android.settings", "com.android.settings.Settings\$DevelopmentSettingsActivity")
             }
         }
         
-        // Running Services
+        // Running Services (AOSP)
         binding.itemRunningServices.setOnClickListener {
-            openHiddenSetting("com.android.settings", "com.android.settings.Settings\$DevRunningServicesActivity")
+            val intents = listOf(
+                "com.android.settings" to "com.android.settings.Settings\$DevRunningServicesActivity",
+                "com.android.settings" to "com.android.settings.applications.RunningServices"
+            )
+            tryOpenSettings(intents)
         }
+    }
+    
+    private fun tryOpenSettings(intents: List<Pair<String, String>>) {
+        for ((pkg, cls) in intents) {
+            try {
+                val intent = Intent().apply {
+                    component = ComponentName(pkg, cls)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                startActivity(intent)
+                return
+            } catch (e: Exception) {
+                continue
+            }
+        }
+        showError()
     }
     
     private fun setupActivityLauncher() {

@@ -4,6 +4,9 @@ object SafetyValidator {
     
     // Apps yang TIDAK BOLEH disentuh sama sekali
     private val CRITICAL_PACKAGES = setOf(
+        // Self-protection
+        "com.appcontrolx",
+        // Android Core
         "com.android.systemui",
         "com.android.settings",
         "com.android.phone",

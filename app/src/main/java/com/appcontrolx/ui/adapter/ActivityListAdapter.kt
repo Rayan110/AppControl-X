@@ -1,10 +1,12 @@
 package com.appcontrolx.ui.adapter
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.appcontrolx.R
 import com.appcontrolx.databinding.ItemActivityBinding
 import com.appcontrolx.ui.ActivityLauncherBottomSheet.ActivityItem
 
@@ -28,9 +30,20 @@ class ActivityListAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
         
         fun bind(item: ActivityItem) {
+            // App icon
+            if (item.appIcon != null) {
+                binding.ivAppIcon.setImageDrawable(item.appIcon)
+                binding.ivAppIcon.visibility = View.VISIBLE
+            } else {
+                binding.ivAppIcon.visibility = View.GONE
+            }
+            
             binding.tvAppName.text = item.appName
             binding.tvActivityName.text = item.activityName.substringAfterLast(".")
             binding.tvFullName.text = item.activityName
+            
+            // Show exported badge
+            binding.tvExported.visibility = if (item.isExported) View.VISIBLE else View.GONE
             
             binding.root.setOnClickListener {
                 onItemClick(item)

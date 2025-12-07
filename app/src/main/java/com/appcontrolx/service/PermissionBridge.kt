@@ -14,27 +14,32 @@ class PermissionBridge(private val context: Context? = null) {
     }
     
     fun detectMode(): ExecutionMode {
-        // First check saved preference
+        // First check saved preference - trust it if set
         val savedMode = prefs?.getString(Constants.PREFS_EXECUTION_MODE, null)
         
-        // Validate saved mode is still available
+        // If user explicitly selected a mode, use it (don't auto-detect)
+        // Only validate if the mode requires special permissions
         return when (savedMode) {
             Constants.MODE_ROOT -> {
-                if (isRootAvailable()) ExecutionMode.Root
-                else detectAvailableMode()
+                // Trust saved root mode - Shell might not be ready yet
+                // Root will be validated when actually used
+                ExecutionMode.Root
             }
             Constants.MODE_SHIZUKU -> {
-                if (isShizukuReady()) ExecutionMode.Shizuku
-                else detectAvailableMode()
+                // Trust saved shizuku mode
+                ExecutionMode.Shizuku
             }
             Constants.MODE_NONE -> ExecutionMode.None
-            else -> detectAvailableMode()
+            else -> {
+                // No saved mode - auto detect
+                detectAvailableMode()
+            }
         }
     }
     
     private fun detectAvailableMode(): ExecutionMode {
         // 1. Check root first (highest priority)
-        if (isRootAvailable()) {
+        if (checkRootNow()) {
             saveMode(Constants.MODE_ROOT)
             return ExecutionMode.Root
         }
@@ -45,7 +50,7 @@ class PermissionBridge(private val context: Context? = null) {
             return ExecutionMode.Shizuku
         }
         
-        // 3. Fallback
+        // 3. Fallback - don't save, let user choose
         return ExecutionMode.None
     }
     
@@ -53,6 +58,25 @@ class PermissionBridge(private val context: Context? = null) {
         prefs?.edit()?.putString(Constants.PREFS_EXECUTION_MODE, mode)?.apply()
     }
     
+    /**
+     * Check root availability NOW (blocking)
+     * Use this only during initial setup or explicit check
+     */
+    fun checkRootNow(): Boolean {
+        return try {
+            // Initialize shell if needed
+            if (!Shell.isAppGrantedRoot()!!) {
+                Shell.getShell() // This will trigger root request
+            }
+            Shell.isAppGrantedRoot() == true
+        } catch (e: Exception) {
+            false
+        }
+    }
+    
+    /**
+     * Quick check without blocking - for UI display
+     */
     fun isRootAvailable(): Boolean {
         return try {
             Shell.isAppGrantedRoot() == true

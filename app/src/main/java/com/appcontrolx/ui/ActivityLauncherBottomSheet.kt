@@ -2,7 +2,9 @@ package com.appcontrolx.ui
 
 import android.content.ComponentName
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -31,7 +33,9 @@ class ActivityLauncherBottomSheet : BottomSheetDialogFragment() {
         val packageName: String,
         val activityName: String,
         val appName: String,
-        val isSystem: Boolean
+        val appIcon: Drawable?,
+        val isSystem: Boolean,
+        val isExported: Boolean
     )
     
     companion object {
@@ -91,14 +95,20 @@ class ActivityLauncherBottomSheet : BottomSheetDialogFragment() {
                 packages.flatMap { pkg ->
                     val isSystem = (pkg.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0
                     val appName = pkg.applicationInfo.loadLabel(pm).toString()
+                    val appIcon = try { pkg.applicationInfo.loadIcon(pm) } catch (e: Exception) { null }
                     
-                    pkg.activities?.map { activity ->
-                        ActivityItem(
-                            packageName = pkg.packageName,
-                            activityName = activity.name,
-                            appName = appName,
-                            isSystem = isSystem
-                        )
+                    pkg.activities?.mapNotNull { activity ->
+                        // Only include valid launchable activities
+                        if (isValidActivity(activity)) {
+                            ActivityItem(
+                                packageName = pkg.packageName,
+                                activityName = activity.name,
+                                appName = appName,
+                                appIcon = appIcon,
+                                isSystem = isSystem,
+                                isExported = activity.exported
+                            )
+                        } else null
                     } ?: emptyList()
                 }.sortedBy { it.appName.lowercase() }
             }
@@ -106,6 +116,24 @@ class ActivityLauncherBottomSheet : BottomSheetDialogFragment() {
             b.progressBar.visibility = View.GONE
             filterActivities()
         }
+    }
+    
+    private fun isValidActivity(activity: ActivityInfo): Boolean {
+        // Filter out invalid/internal activities
+        val name = activity.name.lowercase()
+        
+        // Skip internal/test activities
+        if (name.contains("test") || name.contains("debug") || name.contains("internal")) {
+            return false
+        }
+        
+        // Skip activities that are clearly not meant to be launched
+        if (name.endsWith("receiver") || name.endsWith("service") || name.endsWith("provider")) {
+            return false
+        }
+        
+        // Prefer exported activities or activities with a label
+        return activity.exported || activity.labelRes != 0
     }
     
     private fun filterActivities() {

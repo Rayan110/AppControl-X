@@ -99,30 +99,43 @@ class SettingsFragment : Fragment() {
     
     private fun showModeSelectionDialog() {
         val permissionBridge = PermissionBridge(requireContext())
-        val hasRoot = permissionBridge.isRootAvailable()
-        val hasShizuku = permissionBridge.isShizukuReady()
         
-        val modes = mutableListOf<String>()
-        val modeValues = mutableListOf<String>()
-        
-        if (hasRoot) {
-            modes.add(getString(R.string.mode_root))
-            modeValues.add(Constants.MODE_ROOT)
-        }
-        if (hasShizuku) {
-            modes.add(getString(R.string.mode_shizuku))
-            modeValues.add(Constants.MODE_SHIZUKU)
-        }
-        modes.add(getString(R.string.mode_view_only))
-        modeValues.add(Constants.MODE_NONE)
+        // Always show all modes - let user choose, validate on selection
+        val modes = arrayOf(
+            getString(R.string.mode_root),
+            getString(R.string.mode_shizuku),
+            getString(R.string.mode_view_only)
+        )
+        val modeValues = arrayOf(
+            Constants.MODE_ROOT,
+            Constants.MODE_SHIZUKU,
+            Constants.MODE_NONE
+        )
         
         val currentMode = prefs.getString(Constants.PREFS_EXECUTION_MODE, Constants.MODE_NONE)
         val currentIndex = modeValues.indexOf(currentMode).coerceAtLeast(0)
         
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.settings_change_mode_title)
-            .setSingleChoiceItems(modes.toTypedArray(), currentIndex) { dialog, which ->
+            .setSingleChoiceItems(modes, currentIndex) { dialog, which ->
                 val selectedMode = modeValues[which]
+                
+                // Validate selection
+                when (selectedMode) {
+                    Constants.MODE_ROOT -> {
+                        if (!permissionBridge.checkRootNow()) {
+                            Toast.makeText(context, R.string.error_root_not_available, Toast.LENGTH_SHORT).show()
+                            return@setSingleChoiceItems
+                        }
+                    }
+                    Constants.MODE_SHIZUKU -> {
+                        if (!permissionBridge.isShizukuReady()) {
+                            Toast.makeText(context, R.string.error_shizuku_not_available, Toast.LENGTH_SHORT).show()
+                            return@setSingleChoiceItems
+                        }
+                    }
+                }
+                
                 prefs.edit().putString(Constants.PREFS_EXECUTION_MODE, selectedMode).apply()
                 updateModeDisplay()
                 dialog.dismiss()
