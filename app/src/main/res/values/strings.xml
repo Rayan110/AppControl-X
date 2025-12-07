@@ -222,4 +222,24 @@
     <string name="about_share_text">Check out AppControlX - Control your apps and save battery!\n\nhttps://github.com/risunCode/AppControl-X</string>
     <string name="about_share_via">Share via</string>
     <string name="about_credits">Made with care by risunCode</string>
+    
+    <!-- Action Logs -->
+    <string name="settings_view_logs">Action Logs</string>
+    <string name="settings_log_count">%d actions logged</string>
+    <string name="log_title">Action Logs</string>
+    <string name="log_clear_all">Clear All</string>
+    <string name="log_empty">No actions logged yet</string>
+    <string name="log_no_mode">Root mode required</string>
+    <string name="log_packages_count">%d packages</string>
+    <string name="log_status_success">Success</string>
+    <string name="log_status_failed">Failed</string>
+    <string name="log_rollback">Rollback</string>
+    <string name="log_rollback_title">Rollback Action</string>
+    <string name="log_rollback_message">Reverse %1$s action on %2$d packages?</string>
+    <string name="log_rollback_success">Rollback completed</string>
+    <string name="log_rollback_partial">Rollback completed with %d failures</string>
+    <string name="log_rollback_failed">Rollback failed: %s</string>
+    <string name="log_clear_title">Clear Logs</string>
+    <string name="log_clear_message">Delete all action logs?</string>
+    <string name="log_cleared">Logs cleared</string>
 </resources>

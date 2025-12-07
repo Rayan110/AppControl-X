@@ -15,6 +15,9 @@ import com.appcontrolx.service.PermissionBridge
 import com.appcontrolx.ui.setup.SetupActivity
 import com.appcontrolx.utils.Constants
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.appcontrolx.executor.RootExecutor
+import com.appcontrolx.model.ExecutionMode
+import com.appcontrolx.rollback.RollbackManager
 import java.io.File
 
 class SettingsFragment : Fragment() {
@@ -141,10 +144,12 @@ class SettingsFragment : Fragment() {
     private fun restartApp() {
         val intent = requireContext().packageManager
             .getLaunchIntentForPackage(requireContext().packageName)
-        intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-        startActivity(intent)
-        requireActivity().finish()
-        Runtime.getRuntime().exit(0)
+        if (intent != null) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+            requireActivity().finish()
+            Runtime.getRuntime().exit(0)
+        }
     }
     
     private fun setupSafetySettings() {
@@ -166,6 +171,13 @@ class SettingsFragment : Fragment() {
         }
         
         updateSnapshotCount()
+        updateLogCount()
+        
+        binding.itemViewLogs.setOnClickListener {
+            val bottomSheet = ActionLogBottomSheet.newInstance()
+            bottomSheet.onLogCleared = { updateLogCount() }
+            bottomSheet.show(childFragmentManager, ActionLogBottomSheet.TAG)
+        }
         
         binding.itemClearSnapshots.setOnClickListener {
             MaterialAlertDialogBuilder(requireContext())
@@ -176,6 +188,18 @@ class SettingsFragment : Fragment() {
                 }
                 .setNegativeButton(R.string.confirm_no, null)
                 .show()
+        }
+    }
+    
+    private fun updateLogCount() {
+        val mode = PermissionBridge().detectMode()
+        if (mode is ExecutionMode.Root) {
+            val executor = RootExecutor()
+            val rm = RollbackManager(requireContext(), executor)
+            val count = rm.getLogCount()
+            binding.tvLogCount.text = getString(R.string.settings_log_count, count)
+        } else {
+            binding.tvLogCount.text = getString(R.string.log_no_mode)
         }
     }
     

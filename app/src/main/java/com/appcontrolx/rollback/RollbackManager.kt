@@ -91,6 +91,11 @@ class RollbackManager(
         snapshotFile.delete()
     }
     
+    // Alias methods for UI
+    fun getActionLogs(): List<ActionLog> = getActionHistory()
+    fun clearLogs() = clearHistory()
+    fun getLogCount(): Int = getActionHistory().size
+    
     private fun parseAppOpsValue(output: String): String {
         return when {
             output.contains("ignore") -> "ignore"
