@@ -56,6 +56,18 @@ android {
         buildConfig = true
         aidl = true
     }
+    
+    // Custom APK naming
+    applicationVariants.all {
+        val variant = this
+        variant.outputs.all {
+            val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+            val appName = "AppControlX"
+            val versionName = variant.versionName
+            val buildType = variant.buildType.name
+            output.outputFileName = "${appName}-v${versionName}-${buildType}.apk"
+        }
+    }
 }
 
 dependencies {
