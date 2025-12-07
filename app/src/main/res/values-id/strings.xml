@@ -89,6 +89,7 @@
     <string name="settings_protect_system_desc">Cegah aksi pada aplikasi sistem kritis</string>
     
     <!-- Batch -->
+    <string name="batch_preparing">Mempersiapkan...</string>
     <string name="batch_waiting">Menunggu untuk mulai...</string>
     <string name="batch_countdown">Mulai dalam %d...</string>
     <string name="batch_progress">%1$d / %2$d</string>
@@ -98,6 +99,8 @@
     
     <!-- About -->
     <string name="about_tagline">Kontrol aplikasi, hemat baterai</string>
+    <string name="about_features_title">Fitur</string>
+    <string name="about_features_list">• Bekukan/Aktifkan aplikasi (nonaktifkan tanpa uninstall)\n• Paksa berhenti aplikasi yang berjalan\n• Batasi aktivitas latar belakang\n• Operasi batch pada banyak aplikasi\n• Perlindungan aplikasi sistem\n• Rollback dengan snapshot status\n• Dukungan Root dan Shizuku\n• Desain Material You</string>
     <string name="about_system_title">Info Perangkat</string>
     <string name="about_device">Perangkat</string>
     <string name="about_android">Android</string>

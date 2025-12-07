@@ -1,5 +1,6 @@
 package com.appcontrolx.ui
 
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,9 +12,12 @@ import com.appcontrolx.R
 import com.appcontrolx.databinding.BottomSheetBatchProgressBinding
 import com.appcontrolx.databinding.ItemBatchAppBinding
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
 
 class BatchProgressBottomSheet : BottomSheetDialogFragment() {
 
@@ -23,6 +27,7 @@ class BatchProgressBottomSheet : BottomSheetDialogFragment() {
     private var actionName = ""
     private var appNames = listOf<String>()
     private var packageNames = listOf<String>()
+    private var showCacheSize = false
     private var onExecute: (suspend (String) -> Result<Unit>)? = null
     private var onComplete: (() -> Unit)? = null
     
@@ -32,7 +37,6 @@ class BatchProgressBottomSheet : BottomSheetDialogFragment() {
 
     companion object {
         const val TAG = "BatchProgressBottomSheet"
-        private const val COUNTDOWN_SECONDS = 3
 
         fun newInstance(
             actionName: String,
@@ -45,6 +49,7 @@ class BatchProgressBottomSheet : BottomSheetDialogFragment() {
                 this.actionName = actionName
                 this.appNames = appNames
                 this.packageNames = packageNames
+                this.showCacheSize = actionName == "CLEAR_CACHE" || actionName == "CLEAR_DATA"
                 this.onExecute = onExecute
                 this.onComplete = onComplete
             }
@@ -59,7 +64,7 @@ class BatchProgressBottomSheet : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupUI()
-        startCountdown()
+        initListThenExecute()
     }
 
     private fun setupUI() {
@@ -68,12 +73,10 @@ class BatchProgressBottomSheet : BottomSheetDialogFragment() {
         b.tvAction.text = actionName.replace("_", " ")
         b.progressBar.max = packageNames.size
         b.progressBar.progress = 0
-        b.tvProgress.text = getString(R.string.batch_waiting)
+        b.tvProgress.text = getString(R.string.batch_preparing)
+        b.tvCountdown.text = ""
         
-        // Setup RecyclerView with app list
-        adapter.submitList(appNames.mapIndexed { index, name -> 
-            BatchAppItem(name, packageNames[index], BatchStatus.PENDING)
-        })
+        // Setup RecyclerView
         b.recyclerView.layoutManager = LinearLayoutManager(context)
         b.recyclerView.adapter = adapter
         
@@ -84,17 +87,67 @@ class BatchProgressBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
-    private fun startCountdown() {
+    private fun initListThenExecute() {
         executionJob = lifecycleScope.launch {
-            // Countdown
-            for (i in COUNTDOWN_SECONDS downTo 1) {
-                if (isCancelled) return@launch
-                binding?.tvCountdown?.text = getString(R.string.batch_countdown, i)
-                delay(1000)
+            // Init list first (with cache size if needed)
+            val items = withContext(Dispatchers.IO) {
+                appNames.mapIndexed { index, name ->
+                    val pkg = packageNames[index]
+                    val sizeInfo = if (showCacheSize) getCacheSize(pkg) else null
+                    BatchAppItem(name, pkg, BatchStatus.PENDING, sizeInfo)
+                }
             }
             
-            binding?.tvCountdown?.text = ""
+            if (isCancelled) return@launch
+            
+            adapter.submitList(items)
+            
+            // Small delay for UI to render list
+            delay(100)
+            
+            // Execute immediately
             executeActions()
+        }
+    }
+
+    private fun getCacheSize(packageName: String): String? {
+        return try {
+            val pm = requireContext().packageManager
+            val appInfo = pm.getApplicationInfo(packageName, 0)
+            val dataDir = File(appInfo.dataDir)
+            val cacheDir = File(dataDir, "cache")
+            
+            val cacheSize = if (cacheDir.exists()) getFolderSize(cacheDir) else 0L
+            val totalSize = getFolderSize(dataDir)
+            
+            if (actionName == "CLEAR_CACHE") {
+                formatSize(cacheSize)
+            } else {
+                formatSize(totalSize)
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private fun getFolderSize(dir: File): Long {
+        var size = 0L
+        try {
+            dir.walkTopDown().forEach { file ->
+                if (file.isFile) size += file.length()
+            }
+        } catch (e: Exception) {
+            // Permission denied or other error
+        }
+        return size
+    }
+
+    private fun formatSize(bytes: Long): String {
+        return when {
+            bytes < 1024 -> "$bytes B"
+            bytes < 1024 * 1024 -> "${bytes / 1024} KB"
+            bytes < 1024 * 1024 * 1024 -> String.format("%.1f MB", bytes / (1024.0 * 1024.0))
+            else -> String.format("%.2f GB", bytes / (1024.0 * 1024.0 * 1024.0))
         }
     }
 
@@ -108,8 +161,9 @@ class BatchProgressBottomSheet : BottomSheetDialogFragment() {
 
             b.tvProgress.text = getString(R.string.batch_progress, index + 1, packageNames.size)
             
-            // Update status to processing
+            // Update status to processing & auto scroll
             adapter.updateStatus(index, BatchStatus.PROCESSING)
+            b.recyclerView.smoothScrollToPosition(index)
             
             val result = onExecute?.invoke(pkg) ?: Result.failure(Exception("No executor"))
             
@@ -122,7 +176,7 @@ class BatchProgressBottomSheet : BottomSheetDialogFragment() {
             }
             
             b.progressBar.progress = index + 1
-            delay(100) // Small delay for UI
+            delay(50) // Small delay for UI
         }
 
         // Complete
@@ -149,7 +203,8 @@ class BatchProgressBottomSheet : BottomSheetDialogFragment() {
     data class BatchAppItem(
         val appName: String,
         val packageName: String,
-        var status: BatchStatus
+        var status: BatchStatus,
+        val sizeInfo: String? = null
     )
 
     // Adapter
@@ -182,7 +237,12 @@ class BatchProgressBottomSheet : BottomSheetDialogFragment() {
 
         inner class ViewHolder(private val binding: ItemBatchAppBinding) : RecyclerView.ViewHolder(binding.root) {
             fun bind(item: BatchAppItem) {
-                binding.tvAppName.text = item.appName
+                // Show app name with size info if available
+                binding.tvAppName.text = if (item.sizeInfo != null && item.status == BatchStatus.PENDING) {
+                    "${item.appName} (${item.sizeInfo})"
+                } else {
+                    item.appName
+                }
                 
                 val (statusText, statusColor) = when (item.status) {
                     BatchStatus.PENDING -> "-" to R.color.on_surface_secondary
