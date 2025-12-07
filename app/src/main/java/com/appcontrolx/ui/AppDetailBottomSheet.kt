@@ -21,7 +21,7 @@ import com.appcontrolx.service.BatteryPolicyManager
 import com.appcontrolx.service.PermissionBridge
 import com.appcontrolx.utils.SafetyValidator
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.android.material.chip.Chip
+import com.google.android.material.button.MaterialButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -193,12 +193,9 @@ class AppDetailBottomSheet : BottomSheetDialogFragment() {
         binding.tvBatteryStatus.text = text
         binding.tvBatteryStatus.setTextColor(resources.getColor(color, null))
         
-        // Update chip text based on current status
-        binding.btnToggleBackground.text = if (currentBgStatus == BackgroundStatus.RESTRICTED) {
-            getString(R.string.action_allow_bg)
-        } else {
-            getString(R.string.action_restrict_bg)
-        }
+        // Update button visibility based on current status
+        binding.btnRestrictBg.visibility = if (currentBgStatus == BackgroundStatus.RESTRICTED) View.GONE else View.VISIBLE
+        binding.btnAllowBg.visibility = if (currentBgStatus == BackgroundStatus.RESTRICTED) View.VISIBLE else View.GONE
     }
     
     private fun setupButtons() {
@@ -210,17 +207,18 @@ class AppDetailBottomSheet : BottomSheetDialogFragment() {
         val isForceStopOnly = SafetyValidator.isForceStopOnly(packageName)
         val isCritical = SafetyValidator.isCritical(packageName)
         
-        // Update freeze/unfreeze chip text based on current state
+        // Update freeze/unfreeze button text based on current state
         binding.btnToggleEnable.text = if (isEnabled) getString(R.string.action_freeze) 
                                        else getString(R.string.action_unfreeze)
         
-        // Set chip enabled states
-        setChipEnabled(binding.btnForceStop, hasMode && !isCritical)
-        setChipEnabled(binding.btnToggleEnable, hasMode && SafetyValidator.AllowedAction.FREEZE in allowedActions)
-        setChipEnabled(binding.btnToggleBackground, hasMode && SafetyValidator.AllowedAction.RESTRICT_BACKGROUND in allowedActions)
-        setChipEnabled(binding.btnUninstall, hasMode && SafetyValidator.AllowedAction.UNINSTALL in allowedActions)
-        setChipEnabled(binding.btnClearCache, hasMode && !isCritical)
-        setChipEnabled(binding.btnClearData, hasMode && !isCritical)
+        // Set button enabled states
+        setButtonEnabled(binding.btnForceStop, hasMode && !isCritical)
+        setButtonEnabled(binding.btnToggleEnable, hasMode && SafetyValidator.AllowedAction.FREEZE in allowedActions)
+        setButtonEnabled(binding.btnRestrictBg, hasMode && SafetyValidator.AllowedAction.RESTRICT_BACKGROUND in allowedActions)
+        setButtonEnabled(binding.btnAllowBg, hasMode && SafetyValidator.AllowedAction.RESTRICT_BACKGROUND in allowedActions)
+        setButtonEnabled(binding.btnClearCache, hasMode && !isCritical)
+        setButtonEnabled(binding.btnClearData, hasMode && !isCritical)
+        setButtonEnabled(binding.btnUninstall, hasMode && SafetyValidator.AllowedAction.UNINSTALL in allowedActions)
         
         binding.btnForceStop.setOnClickListener {
             if (isCritical) { showProtectedWarning(); return@setOnClickListener }
@@ -239,22 +237,17 @@ class AppDetailBottomSheet : BottomSheetDialogFragment() {
             }
         }
         
-        binding.btnToggleBackground.setOnClickListener {
+        binding.btnRestrictBg.setOnClickListener {
             if (isForceStopOnly || isCritical) { showProtectedWarning(); return@setOnClickListener }
-            val actionName = if (currentBgStatus == BackgroundStatus.RESTRICTED) 
-                getString(R.string.action_allow_bg) else getString(R.string.action_restrict_bg)
-            executeActionWithLoading(actionName) {
-                if (currentBgStatus == BackgroundStatus.RESTRICTED) 
-                    policyManager?.allowBackground(appInfo!!.packageName)
-                else 
-                    policyManager?.restrictBackground(appInfo!!.packageName)
+            executeActionWithLoading(getString(R.string.action_restrict_bg)) {
+                policyManager?.restrictBackground(appInfo!!.packageName)
             }
         }
         
-        binding.btnUninstall.setOnClickListener {
+        binding.btnAllowBg.setOnClickListener {
             if (isForceStopOnly || isCritical) { showProtectedWarning(); return@setOnClickListener }
-            executeActionWithLoading(getString(R.string.action_uninstall)) { 
-                policyManager?.uninstallApp(appInfo!!.packageName) 
+            executeActionWithLoading(getString(R.string.action_allow_bg)) {
+                policyManager?.allowBackground(appInfo!!.packageName)
             }
         }
         
@@ -269,6 +262,13 @@ class AppDetailBottomSheet : BottomSheetDialogFragment() {
             if (isCritical) { showProtectedWarning(); return@setOnClickListener }
             executeActionWithLoading(getString(R.string.action_clear_data)) {
                 executor?.execute("pm clear ${appInfo!!.packageName}")?.map { }
+            }
+        }
+        
+        binding.btnUninstall.setOnClickListener {
+            if (isForceStopOnly || isCritical) { showProtectedWarning(); return@setOnClickListener }
+            executeActionWithLoading(getString(R.string.action_uninstall)) { 
+                policyManager?.uninstallApp(appInfo!!.packageName) 
             }
         }
         
@@ -334,17 +334,18 @@ class AppDetailBottomSheet : BottomSheetDialogFragment() {
     private fun setButtonsEnabled(enabled: Boolean) {
         binding.btnForceStop.isEnabled = enabled
         binding.btnToggleEnable.isEnabled = enabled
-        binding.btnToggleBackground.isEnabled = enabled
-        binding.btnUninstall.isEnabled = enabled
+        binding.btnRestrictBg.isEnabled = enabled
+        binding.btnAllowBg.isEnabled = enabled
         binding.btnClearCache.isEnabled = enabled
         binding.btnClearData.isEnabled = enabled
+        binding.btnUninstall.isEnabled = enabled
         binding.btnLaunchApp.isEnabled = enabled
         binding.btnOpenSettings.isEnabled = enabled
     }
     
-    private fun setChipEnabled(chip: Chip, enabled: Boolean) {
-        chip.isEnabled = enabled
-        chip.alpha = if (enabled) 1.0f else 0.5f
+    private fun setButtonEnabled(button: MaterialButton, enabled: Boolean) {
+        button.isEnabled = enabled
+        button.alpha = if (enabled) 1.0f else 0.5f
     }
     
     private fun openAppSettings() {

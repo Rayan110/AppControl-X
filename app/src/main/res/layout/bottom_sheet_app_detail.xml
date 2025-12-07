@@ -295,82 +295,140 @@
         android:textStyle="bold"
         android:textSize="14sp" />
 
-    <!-- Control Actions -->
-    <com.google.android.material.chip.ChipGroup
+    <!-- Safe Actions - 3 column grid -->
+    <GridLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        app:singleLine="false">
+        android:columnCount="3"
+        android:useDefaultMargins="true">
 
-        <com.google.android.material.chip.Chip
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnForceStop"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
             android:text="@string/action_force_stop"
-            app:chipIcon="@drawable/ic_stop"
-            app:chipBackgroundColor="@color/surface_container"
-            app:chipStrokeWidth="1dp"
-            app:chipStrokeColor="@color/outline" />
+            android:textSize="11sp"
+            app:icon="@drawable/ic_stop"
+            app:iconSize="18dp"
+            app:iconGravity="top"
+            app:iconPadding="4dp"
+            style="@style/Widget.Material3.Button.TonalButton" />
 
-        <com.google.android.material.chip.Chip
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnToggleEnable"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
             android:text="@string/action_freeze"
-            app:chipIcon="@drawable/ic_freeze"
-            app:chipBackgroundColor="@color/surface_container"
-            app:chipStrokeWidth="1dp"
-            app:chipStrokeColor="@color/outline" />
+            android:textSize="11sp"
+            app:icon="@drawable/ic_freeze"
+            app:iconSize="18dp"
+            app:iconGravity="top"
+            app:iconPadding="4dp"
+            style="@style/Widget.Material3.Button.TonalButton" />
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/btnToggleBackground"
-            android:layout_width="wrap_content"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRestrictBg"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
             android:text="@string/action_restrict_bg"
-            app:chipIcon="@drawable/ic_battery_alert"
-            app:chipBackgroundColor="@color/surface_container"
-            app:chipStrokeWidth="1dp"
-            app:chipStrokeColor="@color/outline" />
+            android:textSize="11sp"
+            app:icon="@drawable/ic_battery_alert"
+            app:iconSize="18dp"
+            app:iconGravity="top"
+            app:iconPadding="4dp"
+            style="@style/Widget.Material3.Button.TonalButton" />
 
-        <com.google.android.material.chip.Chip
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAllowBg"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:text="@string/action_allow_bg"
+            android:textSize="11sp"
+            app:icon="@drawable/ic_check_circle"
+            app:iconSize="18dp"
+            app:iconGravity="top"
+            app:iconPadding="4dp"
+            style="@style/Widget.Material3.Button.TonalButton" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnClearCache"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
             android:text="@string/action_clear_cache"
-            app:chipIcon="@drawable/ic_cleaning"
-            app:chipBackgroundColor="@color/surface_container"
-            app:chipStrokeWidth="1dp"
-            app:chipStrokeColor="@color/outline" />
+            android:textSize="11sp"
+            app:icon="@drawable/ic_cleaning"
+            app:iconSize="18dp"
+            app:iconGravity="top"
+            app:iconPadding="4dp"
+            style="@style/Widget.Material3.Button.TonalButton" />
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/btnClearData"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/action_clear_data"
-            app:chipIcon="@drawable/ic_delete_sweep"
-            app:chipBackgroundColor="@color/surface_container"
-            app:chipStrokeWidth="1dp"
-            app:chipStrokeColor="@color/outline" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/btnUninstall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/action_uninstall"
-            app:chipIcon="@drawable/ic_delete"
-            app:chipBackgroundColor="@color/surface_container"
-            app:chipStrokeWidth="1dp"
-            app:chipStrokeColor="@color/status_negative" />
-
-        <com.google.android.material.chip.Chip
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnOpenSettings"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
             android:text="@string/btn_info"
-            app:chipIcon="@drawable/ic_info"
-            app:chipBackgroundColor="@color/surface_container"
-            app:chipStrokeWidth="1dp"
-            app:chipStrokeColor="@color/outline" />
+            android:textSize="11sp"
+            app:icon="@drawable/ic_info"
+            app:iconSize="18dp"
+            app:iconGravity="top"
+            app:iconPadding="4dp"
+            style="@style/Widget.Material3.Button.TonalButton" />
 
-    </com.google.android.material.chip.ChipGroup>
+    </GridLayout>
+
+    <!-- Danger Actions -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/action_danger_zone"
+        android:textStyle="bold"
+        android:textSize="12sp"
+        android:textColor="@color/status_negative" />
+
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:columnCount="3"
+        android:useDefaultMargins="true">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnClearData"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:text="@string/action_clear_data"
+            android:textSize="11sp"
+            android:textColor="@color/status_negative"
+            app:icon="@drawable/ic_delete_sweep"
+            app:iconSize="18dp"
+            app:iconGravity="top"
+            app:iconPadding="4dp"
+            app:iconTint="@color/status_negative"
+            style="@style/Widget.Material3.Button.OutlinedButton" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnUninstall"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:text="@string/action_uninstall"
+            android:textSize="11sp"
+            android:textColor="@color/status_negative"
+            app:icon="@drawable/ic_delete"
+            app:iconSize="18dp"
+            app:iconGravity="top"
+            app:iconPadding="4dp"
+            app:iconTint="@color/status_negative"
+            style="@style/Widget.Material3.Button.OutlinedButton" />
+
+    </GridLayout>
 </LinearLayout>

@@ -64,6 +64,7 @@
     <string name="action_allow_bg">Izinkan Latar Belakang</string>
     <string name="action_clear_cache">Hapus Cache</string>
     <string name="action_clear_data">Hapus Data</string>
+    <string name="action_danger_zone">Zona Bahaya</string>
     <string name="action_execute">Jalankan</string>
     <string name="action_launch">Buka</string>
     
