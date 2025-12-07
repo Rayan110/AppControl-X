@@ -32,6 +32,9 @@
 -keep class com.appcontrolx.model.** { *; }
 -keep class com.appcontrolx.data.local.entity.** { *; }
 
+# Keep Rollback data classes (for Gson serialization)
+-keep class com.appcontrolx.rollback.** { *; }
+
 # Keep ViewModels
 -keep class * extends androidx.lifecycle.ViewModel {
     <init>();
