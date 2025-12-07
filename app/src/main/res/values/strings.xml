@@ -32,7 +32,7 @@
     <!-- Disclaimer -->
     <string name="disclaimer_title">Important Warning</string>
     <string name="warning_icon_desc">Warning</string>
-    <string name="disclaimer_warning_title">⚠️ Use at Your Own Risk</string>
+    <string name="disclaimer_warning_title">Use at Your Own Risk</string>
     <string name="disclaimer_warning_text">This application provides powerful system-level controls that can significantly affect your device\'s functionality. Improper use may cause apps to malfunction, data loss, or system instability.</string>
     <string name="disclaimer_points_title">Please understand that:</string>
     <string name="disclaimer_point_1">Freezing or disabling system apps may cause your device to become unstable or unusable</string>
