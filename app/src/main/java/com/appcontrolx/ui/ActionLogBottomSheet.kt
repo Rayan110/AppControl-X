@@ -55,10 +55,15 @@ class ActionLogBottomSheet : BottomSheetDialogFragment() {
     
     private fun setupExecutor() {
         val mode = PermissionBridge(requireContext()).detectMode()
-        if (mode is ExecutionMode.Root) {
-            val executor = RootExecutor()
-            policyManager = BatteryPolicyManager(executor)
-            rollbackManager = RollbackManager(requireContext(), executor)
+        val executor: com.appcontrolx.executor.CommandExecutor? = when (mode) {
+            is ExecutionMode.Root -> RootExecutor()
+            is ExecutionMode.Shizuku -> com.appcontrolx.executor.ShizukuExecutor()
+            else -> null
+        }
+        
+        executor?.let {
+            policyManager = BatteryPolicyManager(it)
+            rollbackManager = RollbackManager(requireContext(), it)
         }
     }
     

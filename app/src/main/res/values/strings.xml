@@ -20,7 +20,7 @@
     <string name="mode_root">Root Mode</string>
     <string name="mode_root_desc">Full system access. Can freeze, uninstall, and control any app. Requires rooted device with Magisk or similar.</string>
     <string name="mode_shizuku">Shizuku Mode</string>
-    <string name="mode_shizuku_desc">ADB-level access without root. Requires Shizuku app running. Some features may be limited.</string>
+    <string name="mode_shizuku_desc">Full access without root. All features available including freeze, restrict, and uninstall. Requires Shizuku app running.</string>
     <string name="mode_view_only">View-Only Mode</string>
     <string name="mode_view_only_desc">Browse installed apps only. No control features available. Good for exploring the app.</string>
     
