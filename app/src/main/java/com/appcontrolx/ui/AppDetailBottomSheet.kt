@@ -17,6 +17,7 @@ import com.appcontrolx.model.AppInfo
 import com.appcontrolx.model.ExecutionMode
 import com.appcontrolx.service.BatteryPolicyManager
 import com.appcontrolx.service.PermissionBridge
+import com.appcontrolx.utils.SafetyValidator
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -138,18 +139,49 @@ class AppDetailBottomSheet : BottomSheetDialogFragment() {
     }
     
     private fun setupButtons() {
+        val packageName = arguments?.getString(ARG_PACKAGE_NAME) ?: return
         val hasMode = executionMode !is ExecutionMode.None
         
-        binding.btnForceStop.isEnabled = hasMode
-        binding.btnToggleEnable.isEnabled = hasMode
-        binding.btnToggleBackground.isEnabled = hasMode
-        binding.btnUninstall.isEnabled = hasMode
+        // Get allowed actions based on safety rules
+        val allowedActions = SafetyValidator.getAllowedActions(packageName)
+        val isForceStopOnly = SafetyValidator.isForceStopOnly(packageName)
+        val isCritical = SafetyValidator.isCritical(packageName)
+        
+        // Force Stop - allowed for most apps except critical
+        binding.btnForceStop.isEnabled = hasMode && !isCritical
+        
+        // Freeze/Disable - not allowed for force-stop-only or critical apps
+        binding.btnToggleEnable.isEnabled = hasMode && 
+            SafetyValidator.AllowedAction.FREEZE in allowedActions
+        
+        // Background restriction - not allowed for force-stop-only or critical apps
+        binding.btnToggleBackground.isEnabled = hasMode && 
+            SafetyValidator.AllowedAction.RESTRICT_BACKGROUND in allowedActions
+        
+        // Uninstall - not allowed for force-stop-only or critical apps
+        binding.btnUninstall.isEnabled = hasMode && 
+            SafetyValidator.AllowedAction.UNINSTALL in allowedActions
+        
+        // Show warning for protected apps
+        if (isForceStopOnly) {
+            binding.btnToggleEnable.alpha = 0.5f
+            binding.btnToggleBackground.alpha = 0.5f
+            binding.btnUninstall.alpha = 0.5f
+        }
         
         binding.btnForceStop.setOnClickListener {
+            if (isCritical) {
+                showProtectedWarning()
+                return@setOnClickListener
+            }
             executeAction { policyManager?.forceStop(appInfo!!.packageName) }
         }
         
         binding.btnToggleEnable.setOnClickListener {
+            if (isForceStopOnly || isCritical) {
+                showProtectedWarning()
+                return@setOnClickListener
+            }
             val app = appInfo ?: return@setOnClickListener
             if (app.isEnabled) {
                 executeAction { policyManager?.freezeApp(app.packageName) }
@@ -159,16 +191,28 @@ class AppDetailBottomSheet : BottomSheetDialogFragment() {
         }
         
         binding.btnToggleBackground.setOnClickListener {
+            if (isForceStopOnly || isCritical) {
+                showProtectedWarning()
+                return@setOnClickListener
+            }
             executeAction { policyManager?.restrictBackground(appInfo!!.packageName) }
         }
         
         binding.btnUninstall.setOnClickListener {
+            if (isForceStopOnly || isCritical) {
+                showProtectedWarning()
+                return@setOnClickListener
+            }
             executeAction { policyManager?.uninstallApp(appInfo!!.packageName) }
         }
         
         binding.btnOpenSettings.setOnClickListener {
             openAppSettings()
         }
+    }
+    
+    private fun showProtectedWarning() {
+        Toast.makeText(context, R.string.error_protected_app, Toast.LENGTH_SHORT).show()
     }
     
     private fun executeAction(action: suspend () -> Result<Unit>?) {

@@ -192,19 +192,42 @@ class AppListFragment : Fragment() {
     private fun handleAction(action: ActionBottomSheet.Action, apps: List<AppInfo>) {
         val packages = apps.map { it.packageName }
         
+        // Check for critical packages
         val validation = SafetyValidator.validate(packages)
         if (!validation.canProceed) {
             showBlockedWarning(validation.blocked)
             return
         }
         
+        // Filter out force-stop-only packages for non-force-stop actions
+        val filteredPackages = if (action != ActionBottomSheet.Action.FORCE_STOP) {
+            val forceStopOnly = packages.filter { SafetyValidator.isForceStopOnly(it) }
+            if (forceStopOnly.isNotEmpty()) {
+                showForceStopOnlyWarning(forceStopOnly)
+            }
+            packages.filter { !SafetyValidator.isForceStopOnly(it) }
+        } else {
+            packages
+        }
+        
+        if (filteredPackages.isEmpty()) {
+            Toast.makeText(context, R.string.error_no_valid_apps, Toast.LENGTH_SHORT).show()
+            return
+        }
+        
         if (validation.warnings.isNotEmpty()) {
             showWarningDialog(validation.warnings) {
-                executeAction(action, validation.safe)
+                executeAction(action, filteredPackages.filter { it !in validation.warnings })
             }
         } else {
-            executeAction(action, packages)
+            executeAction(action, filteredPackages)
         }
+    }
+    
+    private fun showForceStopOnlyWarning(packages: List<String>) {
+        Toast.makeText(context, 
+            getString(R.string.warning_force_stop_only, packages.size), 
+            Toast.LENGTH_LONG).show()
     }
     
     private fun executeAction(action: ActionBottomSheet.Action, packages: List<String>) {
