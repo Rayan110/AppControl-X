@@ -10,6 +10,11 @@
         android:label="@string/nav_apps" />
 
     <fragment
+        android:id="@+id/toolsFragment"
+        android:name="com.appcontrolx.ui.ToolsFragment"
+        android:label="@string/nav_tools" />
+
+    <fragment
         android:id="@+id/settingsFragment"
         android:name="com.appcontrolx.ui.SettingsFragment"
         android:label="@string/nav_settings" />

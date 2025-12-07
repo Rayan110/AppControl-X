@@ -46,10 +46,9 @@ class AppListFragment : Fragment() {
     private var showSystemApps = false
     private var executionMode: ExecutionMode = ExecutionMode.None
     
-    // App cache
+    // App cache - persists until package change detected
     private var cachedUserApps: List<AppInfo>? = null
     private var cachedSystemApps: List<AppInfo>? = null
-    private var lastCacheTime = 0L
     
     // Package change receiver
     private val packageReceiver = object : BroadcastReceiver() {
@@ -68,7 +67,6 @@ class AppListFragment : Fragment() {
     companion object {
         private const val LOAD_TIMEOUT_MS = 30000L
         private const val ACTION_TIMEOUT_MS = 60000L
-        private const val CACHE_DURATION_MS = 5 * 60 * 1000L // 5 minutes
     }
     
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -131,8 +129,7 @@ class AppListFragment : Fragment() {
     private fun setupSwipeRefresh() {
         val b = binding ?: return
         b.swipeRefresh.setOnRefreshListener {
-            clearCache()
-            loadApps()
+            loadApps(forceRefresh = true)
         }
         b.swipeRefresh.setColorSchemeResources(
             R.color.primary,
@@ -387,19 +384,14 @@ class AppListFragment : Fragment() {
     private fun clearCache() {
         cachedUserApps = null
         cachedSystemApps = null
-        lastCacheTime = 0L
-    }
-    
-    private fun isCacheValid(): Boolean {
-        return System.currentTimeMillis() - lastCacheTime < CACHE_DURATION_MS
     }
 
-    private fun loadApps() {
+    private fun loadApps(forceRefresh: Boolean = false) {
         val b = binding ?: return
         
-        // Check cache first
+        // Check cache first - only refresh on package change or manual refresh
         val cachedApps = if (showSystemApps) cachedSystemApps else cachedUserApps
-        if (cachedApps != null && isCacheValid()) {
+        if (!forceRefresh && cachedApps != null) {
             displayApps(cachedApps)
             b.swipeRefresh.isRefreshing = false
             return
@@ -418,13 +410,12 @@ class AppListFragment : Fragment() {
                     }
                 }
                 
-                // Cache the results
+                // Cache the results - persists until package change
                 if (showSystemApps) {
                     cachedSystemApps = apps
                 } else {
                     cachedUserApps = apps
                 }
-                lastCacheTime = System.currentTimeMillis()
                 
                 displayApps(apps)
                 

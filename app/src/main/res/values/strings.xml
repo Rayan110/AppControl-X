@@ -243,6 +243,29 @@
     <string name="log_clear_message">Delete all action logs?</string>
     <string name="log_cleared">Logs cleared</string>
     
+    <!-- Tools -->
+    <string name="nav_tools">Tools</string>
+    <string name="tools_subtitle">Hidden settings and advanced tools</string>
+    <string name="tools_section_display">Display</string>
+    <string name="tools_section_notification">Notifications</string>
+    <string name="tools_section_battery">Battery</string>
+    <string name="tools_section_developer">Developer</string>
+    <string name="tools_section_advanced">Advanced</string>
+    <string name="tools_extra_dim">Extra Dim</string>
+    <string name="tools_extra_dim_desc">Reduce screen brightness below minimum</string>
+    <string name="tools_notification_log">Notification Log</string>
+    <string name="tools_notification_history">Notification History</string>
+    <string name="tools_battery_optimization">Battery Optimization</string>
+    <string name="tools_performance_mode">Performance Mode</string>
+    <string name="tools_developer_options">Developer Options</string>
+    <string name="tools_running_services">Running Services</string>
+    <string name="tools_activity_launcher">Activity Launcher</string>
+    <string name="tools_activity_launcher_desc">Launch hidden activities from any app</string>
+    <string name="tools_activity_count">%d activities</string>
+    <string name="tools_activity_launch_failed">Failed to launch activity</string>
+    <string name="tools_not_available">This setting is not available on your device</string>
+    <string name="tools_navigate_manually">Please navigate manually in Settings</string>
+    
     <!-- Status Badges -->
     <string name="badge_frozen">FROZEN</string>
     <string name="badge_running">RUNNING</string>
