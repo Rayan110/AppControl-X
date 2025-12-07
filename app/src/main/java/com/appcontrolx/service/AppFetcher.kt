@@ -43,15 +43,26 @@ class AppFetcher(private val context: Context) {
     }
     
     private fun getRunningPackages(): Set<String> {
-        return try {
-            activityManager.runningAppProcesses
-                ?.map { it.pkgList.toList() }
-                ?.flatten()
-                ?.toSet()
-                ?: emptySet()
+        val running = mutableSetOf<String>()
+        
+        try {
+            // Method 1: runningAppProcesses (limited on Android 10+)
+            activityManager.runningAppProcesses?.forEach { process ->
+                process.pkgList?.forEach { pkg ->
+                    running.add(pkg)
+                }
+            }
+            
+            // Method 2: getRunningServices (deprecated but still works for some cases)
+            @Suppress("DEPRECATION")
+            activityManager.getRunningServices(Int.MAX_VALUE)?.forEach { service ->
+                running.add(service.service.packageName)
+            }
         } catch (e: Exception) {
-            emptySet()
+            // Ignore
         }
+        
+        return running
     }
     
     private fun isBackgroundRestricted(packageName: String, uid: Int): Boolean {

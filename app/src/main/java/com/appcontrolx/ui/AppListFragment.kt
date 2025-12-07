@@ -171,6 +171,7 @@ class AppListFragment : Fragment() {
     private fun setupSwipeRefresh() {
         val b = binding ?: return
         b.swipeRefresh.setOnRefreshListener {
+            clearCache() // Clear cache first to ensure fresh data
             loadApps(forceRefresh = true)
         }
         b.swipeRefresh.setColorSchemeResources(
