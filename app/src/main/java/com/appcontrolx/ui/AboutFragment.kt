@@ -43,7 +43,7 @@ class AboutFragment : Fragment() {
     
     private fun setupLinks() {
         binding.btnGithub.setOnClickListener {
-            openUrl("https://github.com/user/AppControlX")
+            openUrl("https://github.com/risunCode/AppControl-X")
         }
         
         binding.btnShare.setOnClickListener {

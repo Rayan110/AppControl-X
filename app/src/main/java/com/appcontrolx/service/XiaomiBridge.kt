@@ -45,7 +45,12 @@ class XiaomiBridge(
     
     private fun getSystemProperty(key: String): String {
         return try {
-            executor?.execute("getprop $key")?.getOrNull()?.trim() ?: ""
+            // Try executor first if available
+            executor?.execute("getprop $key")?.getOrNull()?.trim()?.takeIf { it.isNotBlank() }
+                ?: // Fallback to reflection
+                Class.forName("android.os.SystemProperties")
+                    .getMethod("get", String::class.java)
+                    .invoke(null, key) as? String ?: ""
         } catch (e: Exception) {
             ""
         }

@@ -12,8 +12,9 @@ class RollbackManager(
     private val executor: CommandExecutor
 ) {
     private val gson = Gson()
-    private val snapshotFile = File(context.filesDir, "rollback_snapshot.json")
-    private val historyFile = File(context.filesDir, "action_history.json")
+    private val snapshotDir = File(context.filesDir, "snapshots").apply { mkdirs() }
+    private val snapshotFile = File(snapshotDir, "rollback_snapshot.json")
+    private val historyFile = File(snapshotDir, "action_history.json")
     
     fun saveSnapshot(packages: List<String>): StateSnapshot {
         val states = packages.map { pkg ->
