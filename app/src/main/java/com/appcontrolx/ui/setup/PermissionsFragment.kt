@@ -1,17 +1,12 @@
 package com.appcontrolx.ui.setup
 
-import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
@@ -33,15 +28,6 @@ class PermissionsFragment : Fragment() {
     
     private var rootGranted = false
     private var shizukuGranted = false
-    private var notificationGranted = false
-    private var queryAppsGranted = false
-    
-    private val notificationPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        notificationGranted = granted
-        updateUI()
-    }
     
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentPermissionsBinding.inflate(inflater, container, false)
@@ -58,11 +44,6 @@ class PermissionsFragment : Fragment() {
     }
     
     private fun setupPermissionButtons() {
-        // Notification permission
-        binding.btnNotification.setOnClickListener {
-            requestNotificationPermission()
-        }
-        
         // Query apps permission (auto-granted via manifest on most devices)
         binding.btnQueryApps.setOnClickListener {
             // Open app settings if needed
@@ -159,27 +140,7 @@ class PermissionsFragment : Fragment() {
         updateUI()
     }
     
-    private fun requestNotificationPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-        } else {
-            notificationGranted = true
-            updateUI()
-        }
-    }
-    
     private fun checkCurrentPermissions() {
-        // Check notification
-        notificationGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS) == 
-                PackageManager.PERMISSION_GRANTED
-        } else {
-            true
-        }
-        
-        // Query apps is auto-granted via manifest
-        queryAppsGranted = true
-        
         // Check saved mode
         val savedMode = prefs.getString(Constants.PREFS_EXECUTION_MODE, null)
         when (savedMode) {
@@ -200,14 +161,7 @@ class PermissionsFragment : Fragment() {
     }
     
     private fun updateUI() {
-        // Notification status
-        binding.tvNotificationStatus.text = if (notificationGranted) 
-            getString(R.string.status_granted) else getString(R.string.status_not_granted)
-        binding.tvNotificationStatus.setTextColor(resources.getColor(
-            if (notificationGranted) R.color.status_positive else R.color.status_neutral, null))
-        binding.btnNotification.visibility = if (notificationGranted) View.GONE else View.VISIBLE
-        
-        // Query apps status
+        // Query apps status (auto-granted)
         binding.tvQueryAppsStatus.text = getString(R.string.status_granted_auto)
         binding.tvQueryAppsStatus.setTextColor(resources.getColor(R.color.status_positive, null))
         binding.btnQueryApps.visibility = View.GONE
