@@ -18,8 +18,11 @@
     
     <!-- Mode strings -->
     <string name="mode_root">Root Mode</string>
+    <string name="mode_root_desc">Full system access. Can freeze, uninstall, and control any app. Requires rooted device with Magisk or similar.</string>
     <string name="mode_shizuku">Shizuku Mode</string>
+    <string name="mode_shizuku_desc">ADB-level access without root. Requires Shizuku app running. Some features may be limited.</string>
     <string name="mode_view_only">View-Only Mode</string>
+    <string name="mode_view_only_desc">Browse installed apps only. No control features available. Good for exploring the app.</string>
     
     <!-- Setup -->
     <string name="setup_welcome">Welcome to AppControlX</string>
@@ -46,8 +49,15 @@
     <string name="miui_detected">MIUI %d detected</string>
     <string name="hyperos_detected">HyperOS %.1f detected</string>
     <string name="unknown_xiaomi_ui">Unknown Xiaomi UI</string>
+    <string name="xiaomi_setup_desc">Xiaomi devices have aggressive battery optimization that may kill background apps. Configure these settings to ensure AppControlX works properly.</string>
+    <string name="xiaomi_battery_title">Battery Optimization</string>
+    <string name="xiaomi_battery_desc">Disable battery restrictions for AppControlX to prevent it from being killed in the background.</string>
+    <string name="xiaomi_open_battery">Open Battery Settings</string>
+    <string name="xiaomi_lock_title">Lock in Recent Apps</string>
+    <string name="xiaomi_lock_desc">Lock AppControlX in recent apps to prevent it from being cleared when you swipe away apps.</string>
+    <string name="xiaomi_view_tutorial">View Tutorial</string>
     <string name="lock_app_title">Lock App in Recents</string>
-    <string name="lock_app_tutorial">To prevent AppControlX from being killed:\n\n1. Open Recent Apps\n2. Swipe down on AppControlX\n3. Tap the lock icon\n\nThis will keep the app running.</string>
+    <string name="lock_app_tutorial">To prevent AppControlX from being killed:\n\n1. Open Recent Apps\n2. Long press on AppControlX card\n3. Tap the lock icon\n\nThis will keep the app running in background.</string>
     
     <!-- Errors -->
     <string name="error_open_autostart">Could not open Autostart settings</string>
@@ -72,9 +82,12 @@
     <string name="btn_next">Next</string>
     <string name="btn_skip">Skip</string>
     <string name="btn_start">Start</string>
-    <string name="btn_check_root">Check Root</string>
-    <string name="btn_install_shizuku">Install Shizuku</string>
+    <string name="btn_check">Check</string>
+    <string name="btn_checking">Checking...</string>
+    <string name="btn_get">Get</string>
     <string name="btn_grant">Grant</string>
+    <string name="root_granted">Root access granted!</string>
+    <string name="root_denied">Root access denied</string>
     
     <!-- Action Sheet -->
     <string name="action_title">%d apps selected</string>

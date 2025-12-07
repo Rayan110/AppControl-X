@@ -24,6 +24,7 @@ class ModeSelectionFragment : Fragment() {
     private val binding get() = _binding!!
     
     private val permissionBridge by lazy { PermissionBridge() }
+    private var selectedMode: String = Constants.MODE_NONE
     
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentModeSelectionBinding.inflate(inflater, container, false)
@@ -33,25 +34,32 @@ class ModeSelectionFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         checkAvailableModes()
+        setupRadioButtons()
         setupButtons()
     }
     
     private fun checkAvailableModes() {
         val hasRoot = permissionBridge.isRootAvailable()
         binding.radioRoot.isEnabled = hasRoot
+        binding.cardRoot.isEnabled = hasRoot
+        binding.cardRoot.alpha = if (hasRoot) 1f else 0.5f
         updateStatus(binding.rootStatusIcon, binding.rootStatusText, hasRoot,
             R.string.status_available, R.string.status_not_available)
         
         val hasShizuku = permissionBridge.isShizukuAvailable()
         binding.radioShizuku.isEnabled = hasShizuku
+        binding.cardShizuku.isEnabled = hasShizuku
+        binding.cardShizuku.alpha = if (hasShizuku) 1f else 0.5f
         updateStatus(binding.shizukuStatusIcon, binding.shizukuStatusText, hasShizuku,
             R.string.status_running, R.string.status_not_running)
         
-        when {
-            hasRoot -> binding.radioRoot.isChecked = true
-            hasShizuku -> binding.radioShizuku.isChecked = true
-            else -> binding.radioViewOnly.isChecked = true
+        // Auto-select best available mode
+        selectedMode = when {
+            hasRoot -> Constants.MODE_ROOT
+            hasShizuku -> Constants.MODE_SHIZUKU
+            else -> Constants.MODE_NONE
         }
+        updateSelection()
     }
     
     private fun updateStatus(iconView: View, textView: android.widget.TextView, 
@@ -64,24 +72,92 @@ class ModeSelectionFragment : Fragment() {
         }
     }
     
+    private fun setupRadioButtons() {
+        // Card click handlers
+        binding.cardRoot.setOnClickListener {
+            if (binding.radioRoot.isEnabled) {
+                selectedMode = Constants.MODE_ROOT
+                updateSelection()
+            }
+        }
+        
+        binding.cardShizuku.setOnClickListener {
+            if (binding.radioShizuku.isEnabled) {
+                selectedMode = Constants.MODE_SHIZUKU
+                updateSelection()
+            }
+        }
+        
+        binding.cardViewOnly.setOnClickListener {
+            selectedMode = Constants.MODE_NONE
+            updateSelection()
+        }
+        
+        // Radio button handlers
+        binding.radioRoot.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked && selectedMode != Constants.MODE_ROOT) {
+                selectedMode = Constants.MODE_ROOT
+                updateSelection()
+            }
+        }
+        
+        binding.radioShizuku.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked && selectedMode != Constants.MODE_SHIZUKU) {
+                selectedMode = Constants.MODE_SHIZUKU
+                updateSelection()
+            }
+        }
+        
+        binding.radioViewOnly.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked && selectedMode != Constants.MODE_NONE) {
+                selectedMode = Constants.MODE_NONE
+                updateSelection()
+            }
+        }
+    }
+    
+    private fun updateSelection() {
+        // Update radio buttons
+        binding.radioRoot.isChecked = selectedMode == Constants.MODE_ROOT
+        binding.radioShizuku.isChecked = selectedMode == Constants.MODE_SHIZUKU
+        binding.radioViewOnly.isChecked = selectedMode == Constants.MODE_NONE
+        
+        // Update card stroke colors
+        val selectedColor = ContextCompat.getColor(requireContext(), R.color.primary)
+        val defaultColor = ContextCompat.getColor(requireContext(), R.color.outline)
+        
+        binding.cardRoot.strokeColor = if (selectedMode == Constants.MODE_ROOT) selectedColor else defaultColor
+        binding.cardShizuku.strokeColor = if (selectedMode == Constants.MODE_SHIZUKU) selectedColor else defaultColor
+        binding.cardViewOnly.strokeColor = if (selectedMode == Constants.MODE_NONE) selectedColor else defaultColor
+    }
+    
     private fun setupButtons() {
         binding.btnCheckRoot.setOnClickListener {
             lifecycleScope.launch {
+                binding.btnCheckRoot.isEnabled = false
+                binding.btnCheckRoot.text = getString(R.string.btn_checking)
+                
                 val result = Shell.cmd("id").exec()
                 if (result.isSuccess) {
-                    Toast.makeText(context, "Root access granted!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.root_granted, Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(context, "Root access denied", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.root_denied, Toast.LENGTH_SHORT).show()
                 }
+                
+                binding.btnCheckRoot.text = getString(R.string.btn_check)
+                binding.btnCheckRoot.isEnabled = true
                 checkAvailableModes()
             }
         }
         
         binding.btnInstallShizuku.setOnClickListener {
-            val intent = Intent(Intent.ACTION_VIEW).apply {
-                data = Uri.parse("market://details?id=moe.shizuku.privileged.api")
+            try {
+                startActivity(Intent(Intent.ACTION_VIEW, 
+                    Uri.parse("market://details?id=moe.shizuku.privileged.api")))
+            } catch (e: Exception) {
+                startActivity(Intent(Intent.ACTION_VIEW,
+                    Uri.parse("https://shizuku.rikka.app/")))
             }
-            startActivity(intent)
         }
         
         binding.btnNext.setOnClickListener {
@@ -91,13 +167,13 @@ class ModeSelectionFragment : Fragment() {
     }
     
     private fun saveSelectedMode() {
-        val mode = when {
-            binding.radioRoot.isChecked -> Constants.MODE_ROOT
-            binding.radioShizuku.isChecked -> Constants.MODE_SHIZUKU
-            else -> Constants.MODE_NONE
-        }
         PreferenceManager.getDefaultSharedPreferences(requireContext())
-            .edit().putString(Constants.PREFS_EXECUTION_MODE, mode).apply()
+            .edit().putString(Constants.PREFS_EXECUTION_MODE, selectedMode).apply()
+    }
+    
+    override fun onResume() {
+        super.onResume()
+        checkAvailableModes()
     }
     
     override fun onDestroyView() {

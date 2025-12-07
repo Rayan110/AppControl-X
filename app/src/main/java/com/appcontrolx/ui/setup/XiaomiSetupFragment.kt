@@ -5,11 +5,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.appcontrolx.R
 import com.appcontrolx.databinding.FragmentXiaomiSetupBinding
 import com.appcontrolx.service.XiaomiBridge
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class XiaomiSetupFragment : Fragment() {
     
@@ -39,12 +39,6 @@ class XiaomiSetupFragment : Fragment() {
     }
     
     private fun setupButtons() {
-        binding.btnAutostart.setOnClickListener {
-            if (!xiaomiBridge.openAutoStartSettings()) {
-                Toast.makeText(context, R.string.error_open_autostart, Toast.LENGTH_SHORT).show()
-            }
-        }
-        
         binding.btnBatterySaver.setOnClickListener {
             if (!xiaomiBridge.openBatterySaverSettings()) {
                 Toast.makeText(context, R.string.error_open_battery, Toast.LENGTH_SHORT).show()
@@ -52,7 +46,7 @@ class XiaomiSetupFragment : Fragment() {
         }
         
         binding.btnLockTutorial.setOnClickListener {
-            AlertDialog.Builder(requireContext())
+            MaterialAlertDialogBuilder(requireContext())
                 .setTitle(R.string.lock_app_title)
                 .setMessage(R.string.lock_app_tutorial)
                 .setPositiveButton(android.R.string.ok, null)
