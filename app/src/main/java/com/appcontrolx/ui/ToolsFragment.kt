@@ -43,7 +43,7 @@ class ToolsFragment : Fragment() {
         binding.itemQColor.setOnClickListener {
             val intents = listOf(
                 // Qualcomm QColor (Snapdragon)
-                "com.qualcomm.qti.qcolor" to "com.qualcomm.qti.qcolor.QcolorActivity",
+                "com.qualcomm.qti.qcolor" to "com.qualcomm.qti.qcolor.QColorActivity",
                 // MediaTek MiraVision
                 "com.mediatek.miravision.ui" to "com.mediatek.miravision.ui.MiraVisionActivity",
                 // AOSP Display Color Mode
