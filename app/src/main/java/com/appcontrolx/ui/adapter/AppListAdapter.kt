@@ -113,13 +113,13 @@ class AppListAdapter(
                 root.alpha = if (app.isEnabled) 1f else 0.6f
                 
                 // Status badges
-                // Running detection: if not frozen, not stopped, not restricted = running
-                val isEffectivelyRunning = !app.isFrozen && !app.isStopped && !app.isBackgroundRestricted
-                val hasAnyBadge = app.isFrozen || isEffectivelyRunning || app.isStopped || app.isBackgroundRestricted
-                statusContainer.visibility = if (hasAnyBadge) View.VISIBLE else View.GONE
+                // New logic: No badge (not frozen, not stopped) = RUNNING
+                // RUNNING can coexist with BACKGROUND RESTRICTED
+                val isRunning = !app.isFrozen && !app.isStopped
+                statusContainer.visibility = View.VISIBLE // Always show container
                 
                 tvStatusFrozen.visibility = if (app.isFrozen) View.VISIBLE else View.GONE
-                tvStatusRunning.visibility = if (isEffectivelyRunning) View.VISIBLE else View.GONE
+                tvStatusRunning.visibility = if (isRunning) View.VISIBLE else View.GONE
                 tvStatusStopped.visibility = if (app.isStopped && !app.isFrozen) View.VISIBLE else View.GONE
                 tvStatusRestricted.visibility = if (app.isBackgroundRestricted && !app.isFrozen) View.VISIBLE else View.GONE
                 
