@@ -17,21 +17,30 @@ A powerful Android application for controlling app behavior, battery optimizatio
 - **Real-time Status** - View current background restriction status per app
 
 ### Tools
-- **Activity Launcher** - Launch hidden activities from any app (long press to copy)
-- **Manage Unknown Sources** - Control app install permissions
-- **Manage Apps (AOSP)** - Pure AOSP app manager
-- **Extra Dim** - Reduce screen brightness below minimum
+- **Activity Launcher** - Launch hidden activities from any app (hold to copy path)
+- **QColor / Display Color** - Qualcomm QColor, MediaTek MiraVision, AOSP, Samsung
+- **Extra Dim** - Reduce screen brightness below minimum (Android 12+)
 - **Notification Log/History** - Access notification records
-- **Battery Usage** - View app battery consumption
+- **Battery Optimization** - View app battery consumption
 - **Power Mode** - Quick access to power settings
 - **Device Info & Diagnostic** - System information
+- **Unknown Sources** - Control app install permissions
+- **Manage Apps (AOSP)** - Pure AOSP app manager
+
+### Action Logs & Rollback
+- **Action History** - Track all operations with timestamps
+- **Rollback** - Reverse battery actions (Freeze/Unfreeze, Restrict/Allow)
+- **State Snapshots** - Automatic backup before actions
 
 ### UI/UX
-- **Material 3 Design** - Modern, clean interface
+- **Material 3 Design** - Modern, clean interface with icons
 - **Dark Mode** - Full dark theme support
 - **Multi-language** - English & Indonesian
-- **Search & Filter** - Quick app discovery
-- **Action Logs** - History of all operations
+- **Search & Filter** - Quick app discovery by name, package, or status
+
+## Screenshots
+
+*Coming soon*
 
 ## Platform Support
 
@@ -45,7 +54,7 @@ A powerful Android application for controlling app behavior, battery optimizatio
 | Custom ROM | Android 10+ | Full |
 
 ### Protected System Apps
-SafetyValidator blocks critical system packages from being disabled/frozen to prevent bricking. Covers AOSP, Google, Xiaomi, Samsung, OPPO, Vivo, Huawei, OnePlus, Nothing, and more.
+SafetyValidator blocks critical system packages from being disabled/frozen to prevent bricking. Covers AOSP, Google, Xiaomi, Samsung, OPPO, Vivo, Huawei, OnePlus, Nothing, ASUS, Sony, Motorola, and more.
 
 ## Requirements
 
@@ -74,6 +83,7 @@ MVVM architecture with Hilt dependency injection.
 
 ```
 com.appcontrolx/
+├── data/local/         # Room Database
 ├── di/                 # Hilt modules
 ├── executor/           # Command execution (Root/Shizuku)
 ├── model/              # Data classes
@@ -89,6 +99,7 @@ com.appcontrolx/
 |-----------|-------------|
 | `PermissionBridge` | Detects execution mode (Root/Shizuku/None) |
 | `RootExecutor` | Executes commands via libsu with security validation |
+| `ShizukuExecutor` | Executes commands via Shizuku UserService |
 | `BatteryPolicyManager` | Manages appops and battery settings |
 | `RollbackManager` | Action logs and state snapshots |
 | `SafetyValidator` | Prevents actions on critical system apps |
@@ -123,11 +134,9 @@ appops set <package> RUN_IN_BACKGROUND allow     # Allow
 appops set <package> WAKE_LOCK ignore            # Disable wake lock
 ```
 
-## Known Issues
+## Changelog
 
-| Issue | Status | Impact |
-|-------|--------|--------|
-| Running detection uses inverse logic | By Design | Apps without STOPPED/FROZEN badge = RUNNING |
+See [CHANGELOG.md](CHANGELOG.md) for full history.
 
 ## Contributing
 
@@ -140,7 +149,11 @@ appops set <package> WAKE_LOCK ignore            # Disable wake lock
 
 GPL-3.0 License - see [LICENSE](LICENSE)
 
-## Acknowledgments
+## Credits
+
+Made with ❤️ by [risunCode](https://github.com/risunCode)
+
+### Acknowledgments
 
 - [libsu](https://github.com/topjohnwu/libsu) - Root shell library
 - [Shizuku](https://github.com/RikkaApps/Shizuku) - Elevated API access
