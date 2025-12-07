@@ -389,18 +389,7 @@
             app:iconPadding="2dp"
             style="@style/Widget.Material3.Button.TonalButton" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnAospInfo"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_columnWeight="1"
-            android:text="@string/action_aosp_info"
-            android:textSize="10sp"
-            app:icon="@drawable/ic_settings"
-            app:iconSize="20dp"
-            app:iconGravity="top"
-            app:iconPadding="2dp"
-            style="@style/Widget.Material3.Button.TonalButton" />
+
 
     </GridLayout>
 </LinearLayout>

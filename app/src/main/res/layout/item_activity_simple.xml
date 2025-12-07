@@ -2,29 +2,47 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:gravity="center_vertical"
+    android:orientation="vertical"
     android:paddingHorizontal="16dp"
     android:paddingVertical="10dp"
     android:background="?attr/selectableItemBackground">
 
-    <TextView
-        android:id="@+id/tvActivityName"
-        android:layout_width="0dp"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:textSize="13sp"
-        android:ellipsize="end"
-        android:maxLines="1" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/tvActivityName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:ellipsize="end"
+            android:maxLines="1" />
+
+        <TextView
+            android:id="@+id/tvExported"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/badge_exported"
+            android:textSize="10sp"
+            android:textColor="@color/status_positive"
+            android:textStyle="bold"
+            android:visibility="gone" />
+    </LinearLayout>
 
     <TextView
-        android:id="@+id/tvExported"
-        android:layout_width="wrap_content"
+        android:id="@+id/tvFullPath"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/badge_exported"
-        android:textSize="10sp"
-        android:textColor="@color/status_positive"
-        android:textStyle="bold"
-        android:visibility="gone" />
+        android:textSize="11sp"
+        android:textColor="@color/on_surface_secondary"
+        android:fontFamily="monospace"
+        android:ellipsize="middle"
+        android:maxLines="1"
+        android:layout_marginTop="2dp" />
 
 </LinearLayout>

@@ -99,7 +99,13 @@ class ActivitySimpleAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
         
         fun bind(item: ActivityItem) {
+            // Show activity short name (e.g., "ManageExternalSourcesActivity")
             binding.tvActivityName.text = item.shortName
+            
+            // Show full path (e.g., "com.android.settings$ManageExternalSourcesActivity")
+            val fullPath = "${item.packageName}\$${item.shortName}"
+            binding.tvFullPath.text = fullPath
+            
             binding.tvExported.visibility = if (item.isExported) View.VISIBLE else View.GONE
             
             binding.root.setOnClickListener {

@@ -260,6 +260,9 @@
     <string name="tools_section_battery">Battery</string>
     <string name="tools_section_developer">Device</string>
     <string name="tools_section_advanced">Advanced</string>
+    <string name="tools_section_apps">Apps</string>
+    <string name="tools_unknown_sources">Manage Unknown Sources</string>
+    <string name="tools_manage_apps">Manage Apps (AOSP)</string>
     <string name="tools_extra_dim">Extra Dim</string>
     <string name="tools_extra_dim_desc">Reduce screen brightness below minimum</string>
     <string name="tools_notification_log">Notification Log</string>

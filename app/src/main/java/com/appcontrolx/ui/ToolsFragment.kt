@@ -108,6 +108,24 @@ class ToolsFragment : Fragment() {
             )
             tryOpenSettings(intents)
         }
+        
+        // Unknown Sources / Install from unknown apps
+        binding.itemUnknownSources.setOnClickListener {
+            val intents = listOf(
+                "com.android.settings" to "com.android.settings.Settings\$ManageExternalSourcesActivity",
+                "com.android.settings" to "com.android.settings.applications.manageapplications.ManageExternalSourcesActivity"
+            )
+            tryOpenSettings(intents)
+        }
+        
+        // Manage Apps (AOSP)
+        binding.itemManageApps.setOnClickListener {
+            val intents = listOf(
+                "com.android.settings" to "com.android.settings.Settings\$ManageApplicationsActivity",
+                "com.android.settings" to "com.android.settings.applications.ManageApplications"
+            )
+            tryOpenSettings(intents)
+        }
     }
     
     private fun tryOpenSettings(intents: List<Pair<String, String>>) {

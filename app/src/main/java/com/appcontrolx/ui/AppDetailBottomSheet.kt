@@ -276,7 +276,6 @@ class AppDetailBottomSheet : BottomSheetDialogFragment() {
         
         binding.btnLaunchApp.setOnClickListener { launchApp() }
         binding.btnOpenSettings.setOnClickListener { openAppSettings() }
-        binding.btnAospInfo.setOnClickListener { openAospAppInfo() }
     }
     
     private fun launchApp() {
@@ -414,7 +413,6 @@ class AppDetailBottomSheet : BottomSheetDialogFragment() {
         binding.btnUninstall.isEnabled = enabled
         binding.btnLaunchApp.isEnabled = enabled
         binding.btnOpenSettings.isEnabled = enabled
-        binding.btnAospInfo.isEnabled = enabled
     }
     
     private fun setButtonEnabled(button: MaterialButton, enabled: Boolean) {
@@ -433,28 +431,7 @@ class AppDetailBottomSheet : BottomSheetDialogFragment() {
         }
     }
     
-    private fun openAospAppInfo() {
-        val packageName = appInfo?.packageName ?: return
-        try {
-            // Use explicit AOSP Settings intent that won't be overridden by custom ROMs
-            val intent = Intent().apply {
-                setClassName("com.android.settings", "com.android.settings.applications.InstalledAppDetails")
-                putExtra("package", packageName)
-                putExtra("com.android.settings.ApplicationPkgName", packageName)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-            startActivity(intent)
-        } catch (e: Exception) {
-            // Fallback to standard settings
-            try {
-                startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                    data = Uri.parse("package:$packageName")
-                })
-            } catch (e2: Exception) {
-                Toast.makeText(context, R.string.error_open_settings, Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
+
     
     private fun formatFileSize(size: Long): String = when {
         size >= 1024 * 1024 * 1024 -> String.format("%.2f GB", size / (1024.0 * 1024 * 1024))
