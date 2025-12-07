@@ -370,7 +370,17 @@ class AppListFragment : Fragment() {
                     }
                 }
             },
-            onComplete = {
+            onComplete = { successCount, failCount ->
+                // Log action
+                lifecycleScope.launch(Dispatchers.IO) {
+                    rm?.logAction(ActionLog(
+                        action = action.name,
+                        packages = packages,
+                        success = failCount == 0,
+                        message = if (failCount == 0) null else "$failCount failed"
+                    ))
+                }
+                
                 adapter.deselectAll()
                 clearCache()
                 loadApps(forceRefresh = true)
@@ -380,7 +390,7 @@ class AppListFragment : Fragment() {
         // Show immediately without waiting
         bottomSheet.show(childFragmentManager, BatchProgressBottomSheet.TAG)
         
-        // Save snapshot in background (non-blocking)
+        // Save snapshot before action (for rollback)
         lifecycleScope.launch(Dispatchers.IO) {
             rm?.saveSnapshot(packages)
         }

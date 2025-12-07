@@ -29,7 +29,7 @@ class BatchProgressBottomSheet : BottomSheetDialogFragment() {
     private var packageNames = listOf<String>()
     private var showCacheSize = false
     private var onExecute: (suspend (String) -> Result<Unit>)? = null
-    private var onComplete: (() -> Unit)? = null
+    private var onComplete: ((successCount: Int, failCount: Int) -> Unit)? = null
     
     private val adapter = BatchAppAdapter()
     private var executionJob: Job? = null
@@ -43,7 +43,7 @@ class BatchProgressBottomSheet : BottomSheetDialogFragment() {
             appNames: List<String>,
             packageNames: List<String>,
             onExecute: suspend (String) -> Result<Unit>,
-            onComplete: () -> Unit
+            onComplete: (successCount: Int, failCount: Int) -> Unit
         ): BatchProgressBottomSheet {
             return BatchProgressBottomSheet().apply {
                 this.actionName = actionName
@@ -186,8 +186,11 @@ class BatchProgressBottomSheet : BottomSheetDialogFragment() {
             getString(R.string.batch_partial_success, successCount, failCount)
         }
         b.btnCancel.text = getString(R.string.btn_close)
+        
+        val finalSuccess = successCount
+        val finalFail = failCount
         b.btnCancel.setOnClickListener {
-            onComplete?.invoke()
+            onComplete?.invoke(finalSuccess, finalFail)
             dismiss()
         }
     }
