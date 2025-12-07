@@ -49,3 +49,6 @@ obj/
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+
+# Proposal docs (internal only)
+app-control-x-proposal/
