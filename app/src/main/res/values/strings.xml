@@ -255,7 +255,7 @@
     <string name="tools_section_display">Display</string>
     <string name="tools_section_notification">Notifications</string>
     <string name="tools_section_battery">Battery</string>
-    <string name="tools_section_developer">Developer</string>
+    <string name="tools_section_developer">Device</string>
     <string name="tools_section_advanced">Advanced</string>
     <string name="tools_extra_dim">Extra Dim</string>
     <string name="tools_extra_dim_desc">Reduce screen brightness below minimum</string>
@@ -263,8 +263,8 @@
     <string name="tools_notification_history">Notification History</string>
     <string name="tools_battery_optimization">Battery Optimization</string>
     <string name="tools_performance_mode">Power Mode</string>
-    <string name="tools_developer_options">Developer Options</string>
-    <string name="tools_running_services">Running Services</string>
+    <string name="tools_developer_options">Device Info</string>
+    <string name="tools_running_services">Device Diagnostic</string>
     <string name="tools_activity_launcher">Activity Launcher</string>
     <string name="tools_activity_launcher_desc">Launch hidden activities from any app</string>
     <string name="tools_activity_count">%d activities</string>

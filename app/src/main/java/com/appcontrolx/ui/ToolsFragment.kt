@@ -63,46 +63,44 @@ class ToolsFragment : Fragment() {
             tryOpenSettings(intents)
         }
         
-        // Battery Optimization
+        // Battery Optimization - App Battery Usage
         binding.itemBatteryOptimization.setOnClickListener {
-            try {
-                startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
-            } catch (e: Exception) {
-                val intents = listOf(
-                    "com.android.settings" to "com.android.settings.Settings\$HighPowerApplicationsActivity",
-                    "com.android.settings" to "com.android.settings.fuelgauge.PowerUsageSummary"
-                )
-                tryOpenSettings(intents)
-            }
+            val intents = listOf(
+                "com.android.settings" to "com.android.settings.Settings\$AppBatteryUsageActivity",
+                "com.android.settings" to "com.android.settings.Settings\$HighPowerApplicationsActivity",
+                "com.android.settings" to "com.android.settings.fuelgauge.PowerUsageSummary"
+            )
+            tryOpenSettings(intents)
         }
         
         // Power Mode Settings
         binding.itemPerformanceMode.setOnClickListener {
             val intents = listOf(
-                // AOSP Power Mode Settings
                 "com.android.settings" to "com.android.settings.Settings\$PowerModeSettingsActivity",
-                // Alternative Power/Battery Settings
                 "com.android.settings" to "com.android.settings.fuelgauge.batterysaver.BatterySaverSettings",
-                // Xiaomi Power Mode
                 "com.miui.powerkeeper" to "com.miui.powerkeeper.ui.HiddenAppsConfigActivity",
-                // Samsung Power Mode
                 "com.samsung.android.lool" to "com.samsung.android.sm.ui.battery.BatteryActivity"
             )
             tryOpenSettings(intents)
         }
         
-        // Developer Options
+        // Device Info
         binding.itemDeveloperOptions.setOnClickListener {
             try {
-                startActivity(Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS))
+                startActivity(Intent(Settings.ACTION_DEVICE_INFO_SETTINGS))
             } catch (e: Exception) {
-                openHiddenSetting("com.android.settings", "com.android.settings.Settings\$DevelopmentSettingsActivity")
+                val intents = listOf(
+                    "com.android.settings" to "com.android.settings.Settings\$DeviceInfoSettingsActivity",
+                    "com.android.settings" to "com.android.settings.DeviceInfoSettings"
+                )
+                tryOpenSettings(intents)
             }
         }
         
-        // Running Services (AOSP)
+        // Device Diagnostic
         binding.itemRunningServices.setOnClickListener {
             val intents = listOf(
+                "com.android.settings" to "com.android.settings.deviceinfo.aboutphone.DeviceDiagnostic",
                 "com.android.settings" to "com.android.settings.Settings\$DevRunningServicesActivity",
                 "com.android.settings" to "com.android.settings.applications.RunningServices"
             )
