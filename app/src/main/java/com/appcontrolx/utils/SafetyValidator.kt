@@ -63,19 +63,34 @@ object SafetyValidator {
         "com.google.android.trichromelibrary",
         "com.google.android.overlay.modules.permissioncontroller",
         
-        // === Xiaomi/MIUI/HyperOS Core ===
+        // === Xiaomi/MIUI/HyperOS Core (DO NOT UNINSTALL OR DISABLE) ===
         "com.miui.system",
         "com.miui.rom",
         "com.miui.core",
         "com.miui.securitycore",
-        "com.miui.contentcatcher",
         "com.miui.systemAdSolution",
         "com.xiaomi.xmsf",
-        "com.xiaomi.account",
         "com.xiaomi.simactivate.service",
-        "com.xiaomi.xmsfkeeper",
         "com.xiaomi.joyose",
         "com.xiaomi.mi_connect_service",
+        "com.lbe.security.miui",           // Permission Manager Service
+        "com.android.updater",             // System Updater (Xiaomi signed)
+        "com.miui.securitycenter",         // Security Center (Xiaomi signed)
+        "com.xiaomi.finddevice",           // Find Device (Xiaomi signed)
+        "com.miui.home",                   // System Launcher
+        "com.miui.guardprovider",          // MIUI Security Component
+        "com.xiaomi.market",               // App Store (Xiaomi signed)
+        "com.xiaomi.account",              // Xiaomi Account
+        "com.miui.packageinstaller",       // Package Installer
+        
+        // === MIUI Auto-enable packages (DISABLE NOT WORKING) ===
+        "com.miui.contentcatcher",
+        "com.android.printspooler",
+        "com.miui.audiomonitor",
+        "com.miui.voicetrigger",
+        "com.xiaomi.mircs",
+        "com.miui.daemon",
+        "com.xiaomi.xmsfkeeper",
         
         // === Samsung Core ===
         "com.samsung.android.providers.context",
@@ -110,16 +125,21 @@ object SafetyValidator {
     )
     
     // Apps yang HANYA BOLEH di-force stop (tidak boleh freeze/uninstall/disable)
+    // These are security/system apps that can cause issues if disabled
     private val FORCE_STOP_ONLY_PACKAGES = setOf(
-        // === Xiaomi/MIUI/HyperOS Security & Power ===
-        "com.miui.securitycenter",
+        // === Xiaomi/MIUI/HyperOS (CAN DISABLE, NOT RECOMMENDED) ===
+        "com.miui.powerkeeper",            // Battery & Performance
+        "com.xiaomi.metoknlp",             // Network Location Service
+        "com.miui.tsmclient",              // Xiaomi Smart Card
+        "com.miui.accessibility",          // Accessibility Service (TTS)
+        "com.miui.backup",                 // Backup & Restore
+        "com.miui.freeform",               // Freeform Window
+        "com.miui.face",                   // Face Recognition
+        "com.miui.miwallpaper",            // Desktop Wallpaper
+        "com.miui.aod",                    // Always On Display
         "com.miui.securityadd",
-        "com.miui.guardprovider",
         "com.miui.antispam",
-        "com.xiaomi.finddevice",
-        "com.miui.powerkeeper",
         "com.miui.analytics",
-        "com.miui.daemon",
         "com.miui.notification",
         "com.miui.hybrid",
         "com.miui.hybrid.accessory",
@@ -166,9 +186,7 @@ object SafetyValidator {
     private val WARNING_PACKAGES = setOf(
         "com.google.android.apps.messaging",
         "com.google.android.dialer",
-        "com.google.android.contacts",
-        "com.miui.home",
-        "com.miui.miwallpaper"
+        "com.google.android.contacts"
     )
     
     fun validate(packages: List<String>): ValidationResult {
