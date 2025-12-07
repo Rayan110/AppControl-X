@@ -104,11 +104,21 @@ com.appcontrolx/
 - **Background**: WorkManager
 - **Root**: [libsu](https://github.com/topjohnwu/libsu) by topjohnwu
 - **Shizuku**: [Shizuku-API](https://github.com/RikkaApps/Shizuku-API) by RikkaApps
-- **Logging**: Timber
-- **Crash Reporting**: Firebase Crashlytics
 - **Build**: Gradle 8.2, AGP 8.2.0
 - **CI/CD**: GitHub Actions
-- **Testing**: JUnit, Mockito, Turbine
+
+## Localization
+
+| Language | Code | Status |
+|----------|------|--------|
+| English | `en` | Default |
+| Indonesian | `id` | Complete |
+
+## Theme Support
+
+- Light Mode
+- Dark Mode
+- System Default (follows device setting)
 
 ## Commands Reference
 
