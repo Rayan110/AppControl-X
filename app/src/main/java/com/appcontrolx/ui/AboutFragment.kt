@@ -1,6 +1,7 @@
 package com.appcontrolx.ui
 
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -8,18 +9,25 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.appcontrolx.R
 import com.appcontrolx.databinding.FragmentAboutBinding
 import com.appcontrolx.service.PermissionBridge
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import timber.log.Timber
 
+@AndroidEntryPoint
 class AboutFragment : Fragment() {
     
     private var _binding: FragmentAboutBinding? = null
-    private val binding get() = _binding!!
+    private val binding get() = _binding
     
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _binding = FragmentAboutBinding.inflate(inflater, container, false)
-        return binding.root
+        return _binding?.root
     }
     
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -27,48 +35,91 @@ class AboutFragment : Fragment() {
         
         setupAppInfo()
         setupSystemInfo()
+        setupStats()
         setupLinks()
     }
     
     private fun setupAppInfo() {
-        val packageInfo = requireContext().packageManager
-            .getPackageInfo(requireContext().packageName, 0)
-        
-        binding.tvVersion.text = getString(R.string.about_version_format, 
-            packageInfo.versionName, packageInfo.longVersionCode)
+        val b = binding ?: return
+        try {
+            val packageInfo = requireContext().packageManager
+                .getPackageInfo(requireContext().packageName, 0)
+            
+            b.tvVersion.text = getString(R.string.about_version_format, 
+                packageInfo.versionName, packageInfo.longVersionCode)
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to get package info")
+        }
         
         // Current mode
-        val mode = PermissionBridge().detectMode()
-        binding.tvCurrentMode.text = mode.displayName()
+        val mode = PermissionBridge(requireContext()).detectMode()
+        b.tvCurrentMode.text = mode.displayName()
     }
     
     private fun setupSystemInfo() {
-        binding.tvDeviceInfo.text = getString(R.string.about_device_format,
-            Build.MANUFACTURER, Build.MODEL)
-        binding.tvAndroidVersion.text = getString(R.string.about_android_format,
+        val b = binding ?: return
+        b.tvDeviceInfo.text = getString(R.string.about_device_format,
+            Build.MANUFACTURER.replaceFirstChar { it.uppercase() }, Build.MODEL)
+        b.tvAndroidVersion.text = getString(R.string.about_android_format,
             Build.VERSION.RELEASE, Build.VERSION.SDK_INT)
     }
     
+    private fun setupStats() {
+        val b = binding ?: return
+        
+        lifecycleScope.launch {
+            val (userApps, systemApps) = withContext(Dispatchers.IO) {
+                val pm = requireContext().packageManager
+                val packages = pm.getInstalledPackages(0)
+                
+                var user = 0
+                var system = 0
+                
+                packages.forEach { pkg ->
+                    if ((pkg.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0) {
+                        system++
+                    } else {
+                        user++
+                    }
+                }
+                
+                Pair(user, system)
+            }
+            
+            b.tvUserAppsCount.text = userApps.toString()
+            b.tvSystemAppsCount.text = systemApps.toString()
+            
+            // Actions count from prefs (placeholder for now)
+            b.tvActionsCount.text = "0"
+        }
+    }
+    
     private fun setupLinks() {
-        binding.btnGithub.setOnClickListener {
+        val b = binding ?: return
+        
+        b.btnGithub.setOnClickListener {
             openUrl("https://github.com/risunCode/AppControl-X")
         }
         
-        binding.btnShare.setOnClickListener {
+        b.btnShare.setOnClickListener {
             shareApp()
         }
         
-        binding.btnRate.setOnClickListener {
+        b.btnRate.setOnClickListener {
             openUrl("https://github.com/risunCode/AppControl-X/stargazers")
         }
         
-        binding.btnBugReport.setOnClickListener {
+        b.btnBugReport.setOnClickListener {
             openUrl("https://github.com/risunCode/AppControl-X/issues/new")
         }
     }
     
     private fun openUrl(url: String) {
-        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+        try {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to open URL: $url")
+        }
     }
     
     private fun shareApp() {

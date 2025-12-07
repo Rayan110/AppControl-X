@@ -201,19 +201,27 @@
     <string name="about_tagline">Control your apps, save your battery</string>
     <string name="about_version_format">Version %1$s (%2$d)</string>
     <string name="about_features_title">Features</string>
-    <string name="about_features_list">• Freeze/Unfreeze apps (disable without uninstall)\n• Force stop running apps\n• Restrict background activity\n• Batch operations on multiple apps\n• System app protection\n• Xiaomi/MIUI/HyperOS support\n• Rollback with state snapshots\n• Root and Shizuku support\n• Material You design</string>
-    <string name="about_system_title">System Info</string>
+    <string name="about_features_list">• Freeze/Unfreeze apps (disable without uninstall)\n• Force stop running apps\n• Restrict background activity\n• Batch operations on multiple apps\n• System app protection\n• Rollback with state snapshots\n• Root and Shizuku support\n• Material You design</string>
+    <string name="about_system_title">Device Info</string>
     <string name="about_device">Device</string>
     <string name="about_device_format">%1$s %2$s</string>
     <string name="about_android">Android</string>
     <string name="about_android_format">%1$s (API %2$d)</string>
+    <string name="about_links_title">Links</string>
     <string name="about_github">GitHub</string>
+    <string name="about_github_desc">View source code and contribute</string>
     <string name="about_share">Share</string>
-    <string name="about_rate">Star</string>
+    <string name="about_share_app">Share AppControlX</string>
+    <string name="about_rate">Star on GitHub</string>
+    <string name="about_rate_desc">Support the project with a star</string>
     <string name="about_bug_report">Report Bug</string>
+    <string name="about_bug_desc">Found an issue? Let us know</string>
     <string name="about_share_text">Check out AppControlX - Control your apps and save battery!\n\nhttps://github.com/risunCode/AppControl-X</string>
     <string name="about_share_via">Share via</string>
-    <string name="about_credits">Made with care by risunCode</string>
+    <string name="about_credits">Made with ❤️ by risunCode</string>
+    <string name="stat_user_apps">User Apps</string>
+    <string name="stat_system_apps">System Apps</string>
+    <string name="stat_actions">Actions</string>
     
     <!-- Action Logs -->
     <string name="settings_view_logs">Action Logs</string>
