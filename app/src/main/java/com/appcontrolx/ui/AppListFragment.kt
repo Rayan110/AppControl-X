@@ -5,9 +5,12 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -45,6 +48,7 @@ class AppListFragment : Fragment() {
     
     private var showSystemApps = false
     private var executionMode: ExecutionMode = ExecutionMode.None
+    private var currentSearchQuery: String = ""
     
     // App cache - persists until package change detected
     private var cachedUserApps: List<AppInfo>? = null
@@ -83,11 +87,49 @@ class AppListFragment : Fragment() {
         setupHeader()
         setupRecyclerView()
         setupSwipeRefresh()
+        setupSearch()
         setupChips()
         setupSelectionBar()
         setupSelectAll()
         registerPackageReceiver()
         loadApps()
+    }
+    
+    private fun setupSearch() {
+        val b = binding ?: return
+        
+        b.etSearch.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                currentSearchQuery = s?.toString()?.trim() ?: ""
+                filterApps()
+            }
+        })
+        
+        b.etSearch.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                filterApps()
+                true
+            } else false
+        }
+    }
+    
+    private fun filterApps() {
+        val cachedApps = if (showSystemApps) cachedSystemApps else cachedUserApps
+        if (cachedApps == null) return
+        
+        val filtered = if (currentSearchQuery.isBlank()) {
+            cachedApps
+        } else {
+            val query = currentSearchQuery.lowercase()
+            cachedApps.filter { app ->
+                app.appName.lowercase().contains(query) ||
+                app.packageName.lowercase().contains(query)
+            }
+        }
+        
+        displayApps(filtered)
     }
     
     private fun setupExecutionMode() {
@@ -412,7 +454,7 @@ class AppListFragment : Fragment() {
         // Check cache first - only refresh on package change or manual refresh
         val cachedApps = if (showSystemApps) cachedSystemApps else cachedUserApps
         if (!forceRefresh && cachedApps != null) {
-            displayApps(cachedApps)
+            filterApps() // Apply current search filter
             b.swipeRefresh.isRefreshing = false
             return
         }
@@ -437,7 +479,7 @@ class AppListFragment : Fragment() {
                     cachedUserApps = apps
                 }
                 
-                displayApps(apps)
+                filterApps() // Apply current search filter
                 
             } catch (e: TimeoutCancellationException) {
                 showEmptyState(
@@ -462,11 +504,21 @@ class AppListFragment : Fragment() {
         val b = binding ?: return
         
         if (apps.isEmpty()) {
-            showEmptyState(
-                getString(R.string.empty_no_apps_title),
-                getString(R.string.empty_no_apps_message)
-            )
+            if (currentSearchQuery.isNotBlank()) {
+                // No search results
+                showEmptyState(
+                    getString(R.string.search_no_results),
+                    "\"$currentSearchQuery\""
+                )
+            } else {
+                showEmptyState(
+                    getString(R.string.empty_no_apps_title),
+                    getString(R.string.empty_no_apps_message)
+                )
+            }
         } else {
+            b.emptyState.visibility = View.GONE
+            b.recyclerView.visibility = View.VISIBLE
             adapter.submitList(apps)
             b.tvAppCount.text = getString(R.string.app_count, apps.size)
         }

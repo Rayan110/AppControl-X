@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -19,7 +20,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 
 class ActivityLauncherBottomSheet : BottomSheetDialogFragment() {
     
@@ -156,7 +156,7 @@ class ActivityLauncherBottomSheet : BottomSheetDialogFragment() {
             }
             
             b.progressBar.visibility = View.GONE
-            Timber.d("Loaded ${allAppGroups.size} apps with activities")
+            Log.d(TAG, "Loaded ${allAppGroups.size} apps with activities")
             filterActivities()
         }
     }
@@ -203,9 +203,9 @@ class ActivityLauncherBottomSheet : BottomSheetDialogFragment() {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             startActivity(intent)
-            Timber.d("Launched activity: ${activity.activityName}")
+            Log.d(TAG, "Launched activity: ${activity.activityName}")
         } catch (e: Exception) {
-            Timber.e(e, "Failed to launch activity: ${activity.activityName}")
+            Log.e(TAG, "Failed to launch activity: ${activity.activityName}", e)
             Toast.makeText(context, R.string.tools_activity_launch_failed, Toast.LENGTH_SHORT).show()
         }
     }
