@@ -93,14 +93,14 @@ class SettingsFragment : Fragment() {
     }
     
     private fun updateModeDisplay() {
-        val mode = PermissionBridge().detectMode()
+        val mode = PermissionBridge(requireContext()).detectMode()
         binding.tvCurrentMode.text = mode.displayName()
     }
     
     private fun showModeSelectionDialog() {
-        val permissionBridge = PermissionBridge()
+        val permissionBridge = PermissionBridge(requireContext())
         val hasRoot = permissionBridge.isRootAvailable()
-        val hasShizuku = permissionBridge.isShizukuAvailable() && permissionBridge.isShizukuPermissionGranted()
+        val hasShizuku = permissionBridge.isShizukuReady()
         
         val modes = mutableListOf<String>()
         val modeValues = mutableListOf<String>()
@@ -192,7 +192,7 @@ class SettingsFragment : Fragment() {
     }
     
     private fun updateLogCount() {
-        val mode = PermissionBridge().detectMode()
+        val mode = PermissionBridge(requireContext()).detectMode()
         if (mode is ExecutionMode.Root) {
             val executor = RootExecutor()
             val rm = RollbackManager(requireContext(), executor)

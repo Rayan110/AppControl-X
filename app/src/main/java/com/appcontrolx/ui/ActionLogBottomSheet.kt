@@ -54,7 +54,7 @@ class ActionLogBottomSheet : BottomSheetDialogFragment() {
     }
     
     private fun setupExecutor() {
-        val mode = PermissionBridge().detectMode()
+        val mode = PermissionBridge(requireContext()).detectMode()
         if (mode is ExecutionMode.Root) {
             val executor = RootExecutor()
             policyManager = BatteryPolicyManager(executor)

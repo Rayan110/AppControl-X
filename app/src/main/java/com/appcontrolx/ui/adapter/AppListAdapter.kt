@@ -43,6 +43,10 @@ class AppListAdapter(
     
     fun isAllSelected(): Boolean = selectedPackages.size == currentList.size && currentList.isNotEmpty()
     
+    fun getAppName(packageName: String): String? {
+        return currentList.find { it.packageName == packageName }?.appName
+    }
+    
     private fun toggleSelection(packageName: String) {
         if (selectedPackages.contains(packageName)) {
             selectedPackages.remove(packageName)

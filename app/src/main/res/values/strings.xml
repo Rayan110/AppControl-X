@@ -242,4 +242,11 @@
     <string name="log_clear_title">Clear Logs</string>
     <string name="log_clear_message">Delete all action logs?</string>
     <string name="log_cleared">Logs cleared</string>
+    
+    <!-- Batch Progress -->
+    <string name="batch_progress">%1$d / %2$d</string>
+    <string name="batch_preparing">Preparing…</string>
+    <string name="batch_completed">Completed</string>
+    <string name="batch_all_success">All %d apps processed successfully</string>
+    <string name="batch_partial_success">%1$d success, %2$d failed</string>
 </resources>

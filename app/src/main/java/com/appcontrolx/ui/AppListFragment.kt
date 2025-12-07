@@ -93,13 +93,14 @@ class AppListFragment : Fragment() {
     }
     
     private fun setupExecutionMode() {
-        executionMode = PermissionBridge().detectMode()
+        executionMode = PermissionBridge(requireContext()).detectMode()
         
         if (executionMode is ExecutionMode.Root) {
             executor = RootExecutor()
             policyManager = BatteryPolicyManager(executor!!)
             rollbackManager = RollbackManager(requireContext(), executor!!)
         }
+        // TODO: Add Shizuku executor support
     }
     
     private fun setupHeader() {
@@ -287,18 +288,28 @@ class AppListFragment : Fragment() {
     private fun executeAction(action: ActionBottomSheet.Action, packages: List<String>) {
         val pm = policyManager ?: return
         val rm = rollbackManager
-        val b = binding ?: return
+        
+        // Show progress dialog
+        val progressDialog = BatchProgressDialog.newInstance(action.name, packages.size)
+        progressDialog.show(childFragmentManager, BatchProgressDialog.TAG)
         
         lifecycleScope.launch {
-            b.progressBar.visibility = View.VISIBLE
-            
             try {
                 rm?.saveSnapshot(packages)
                 
-                val results = withTimeout(ACTION_TIMEOUT_MS) {
-                    withContext(Dispatchers.IO) {
-                        packages.map { pkg ->
-                            val result = when (action) {
+                val results = mutableListOf<Pair<String, Result<Unit>>>()
+                
+                withTimeout(ACTION_TIMEOUT_MS) {
+                    packages.forEachIndexed { index, pkg ->
+                        // Update progress on main thread
+                        withContext(Dispatchers.Main) {
+                            val appName = adapter.getAppName(pkg) ?: pkg
+                            progressDialog.updateProgress(appName, index + 1)
+                        }
+                        
+                        // Execute on IO thread
+                        val result = withContext(Dispatchers.IO) {
+                            when (action) {
                                 ActionBottomSheet.Action.FREEZE -> pm.freezeApp(pkg)
                                 ActionBottomSheet.Action.UNFREEZE -> pm.unfreezeApp(pkg)
                                 ActionBottomSheet.Action.UNINSTALL -> pm.uninstallApp(pkg)
@@ -306,12 +317,16 @@ class AppListFragment : Fragment() {
                                 ActionBottomSheet.Action.RESTRICT_BACKGROUND -> pm.restrictBackground(pkg)
                                 ActionBottomSheet.Action.ALLOW_BACKGROUND -> pm.allowBackground(pkg)
                             }
-                            pkg to result
                         }
+                        results.add(pkg to result)
                     }
                 }
                 
+                val successCount = results.count { it.second.isSuccess }
                 val failCount = results.count { it.second.isFailure }
+                
+                // Show completion in dialog
+                progressDialog.setCompleted(successCount, failCount)
                 
                 rm?.logAction(ActionLog(
                     action = action.name,
@@ -320,28 +335,26 @@ class AppListFragment : Fragment() {
                     message = if (failCount > 0) "$failCount failed" else null
                 ))
                 
-                if (failCount == 0) {
-                    Toast.makeText(context, R.string.action_success, Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(context, getString(R.string.action_failed, "$failCount apps"), Toast.LENGTH_SHORT).show()
-                }
+                // Delay before dismiss
+                kotlinx.coroutines.delay(1500)
+                progressDialog.dismiss()
                 
                 adapter.deselectAll()
                 clearCache()
                 loadApps()
                 
             } catch (e: TimeoutCancellationException) {
+                progressDialog.dismiss()
                 showErrorDialog(
                     getString(R.string.error_timeout_title),
                     getString(R.string.error_timeout_message)
                 )
             } catch (e: Exception) {
+                progressDialog.dismiss()
                 showErrorDialog(
                     getString(R.string.error_action_title),
                     e.message ?: getString(R.string.error_unknown)
                 )
-            } finally {
-                binding?.progressBar?.visibility = View.GONE
             }
         }
     }
