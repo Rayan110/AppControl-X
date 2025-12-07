@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
@@ -100,16 +101,16 @@ class SettingsFragment : Fragment() {
             )
             val languageCodes = arrayOf("system", "en", "id")
             
-            val currentLang = prefs.getString(Constants.PREFS_LANGUAGE, "system") ?: "system"
+            // Get current from AppCompatDelegate
+            val currentLocales = AppCompatDelegate.getApplicationLocales()
+            val currentLang = if (currentLocales.isEmpty) "system" else currentLocales.toLanguageTags().split("-")[0]
             val currentIndex = languageCodes.indexOf(currentLang).coerceAtLeast(0)
             
             MaterialAlertDialogBuilder(requireContext())
                 .setTitle(R.string.settings_language)
                 .setSingleChoiceItems(languages, currentIndex) { dialog, which ->
                     val selectedLang = languageCodes[which]
-                    prefs.edit().putString(Constants.PREFS_LANGUAGE, selectedLang).apply()
                     applyLanguage(selectedLang)
-                    updateLanguageText()
                     dialog.dismiss()
                 }
                 .setNegativeButton(android.R.string.cancel, null)
@@ -118,33 +119,26 @@ class SettingsFragment : Fragment() {
     }
     
     private fun updateLanguageText() {
-        val currentLang = prefs.getString(Constants.PREFS_LANGUAGE, "system") ?: "system"
-        binding.tvCurrentLanguage.text = when (currentLang) {
-            "en" -> getString(R.string.language_english)
-            "id" -> getString(R.string.language_indonesian)
+        val currentLocales = AppCompatDelegate.getApplicationLocales()
+        val langTag = if (currentLocales.isEmpty) "system" else currentLocales.toLanguageTags()
+        
+        binding.tvCurrentLanguage.text = when {
+            langTag.startsWith("en") -> getString(R.string.language_english)
+            langTag.startsWith("id") -> getString(R.string.language_indonesian)
             else -> getString(R.string.language_system)
         }
     }
     
     private fun applyLanguage(langCode: String) {
-        val locale = when (langCode) {
-            "en" -> java.util.Locale.ENGLISH
-            "id" -> java.util.Locale("id", "ID")
-            else -> java.util.Locale.getDefault()
+        // Use AppCompatDelegate for proper locale handling (Android 13+ compatible)
+        val localeList = when (langCode) {
+            "en" -> LocaleListCompat.forLanguageTags("en")
+            "id" -> LocaleListCompat.forLanguageTags("id")
+            else -> LocaleListCompat.getEmptyLocaleList() // System default
         }
         
-        val config = resources.configuration
-        config.setLocale(locale)
-        
-        // Restart activity to apply
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle(R.string.settings_language)
-            .setMessage(R.string.settings_restart_required)
-            .setPositiveButton(R.string.settings_restart_now) { _, _ ->
-                restartApp()
-            }
-            .setNegativeButton(R.string.settings_restart_later, null)
-            .show()
+        AppCompatDelegate.setApplicationLocales(localeList)
+        // Activity will recreate automatically, no need for manual restart
     }
     
     private fun setupCurrentMode() {
