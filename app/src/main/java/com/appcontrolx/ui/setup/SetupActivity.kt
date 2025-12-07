@@ -37,9 +37,10 @@ class SetupActivity : AppCompatActivity() {
     }
     
     private fun setupViewPager() {
+        // Order: Permissions first, then Disclaimer (warning)
         val fragments = listOf<Fragment>(
-            DisclaimerFragment(),
-            PermissionsFragment()
+            PermissionsFragment(),
+            DisclaimerFragment()
         )
         
         binding.viewPager.adapter = SetupPagerAdapter(this, fragments)

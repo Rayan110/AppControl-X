@@ -51,7 +51,7 @@ ehthumbs.db
 Desktop.ini
 
 # Proposal docs (internal only)
-app-control-x-proposal/
+.app-control-x-proposal/
 
 # Kiro IDE (local steering rules)
 .kiro/

@@ -112,26 +112,37 @@ class PermissionsFragment : Fragment() {
             
             if (hasRoot) {
                 selectMode(Constants.MODE_ROOT)
+                binding.btnCheckRoot.text = getString(R.string.status_access_granted)
+                binding.btnCheckRoot.isEnabled = false // Keep disabled when granted
                 Toast.makeText(context, R.string.root_granted, Toast.LENGTH_SHORT).show()
             } else {
+                binding.btnCheckRoot.isEnabled = true
+                binding.btnCheckRoot.text = getString(R.string.btn_check)
                 Toast.makeText(context, R.string.root_denied, Toast.LENGTH_SHORT).show()
             }
             
-            binding.btnCheckRoot.isEnabled = true
-            binding.btnCheckRoot.text = getString(R.string.btn_check)
             updateUI()
         }
     }
     
     private fun checkShizukuAccess() {
+        binding.btnCheckShizuku.isEnabled = false
+        binding.btnCheckShizuku.text = getString(R.string.btn_checking)
+        
         if (permissionBridge.isShizukuAvailable()) {
             if (permissionBridge.isShizukuPermissionGranted()) {
                 shizukuGranted = true
                 selectMode(Constants.MODE_SHIZUKU)
+                binding.btnCheckShizuku.text = getString(R.string.status_access_granted)
+                // Keep disabled when granted
             } else {
                 permissionBridge.requestShizukuPermission()
+                binding.btnCheckShizuku.isEnabled = true
+                binding.btnCheckShizuku.text = getString(R.string.btn_check)
             }
         } else {
+            binding.btnCheckShizuku.isEnabled = true
+            binding.btnCheckShizuku.text = getString(R.string.btn_check)
             Toast.makeText(context, R.string.error_shizuku_not_available, Toast.LENGTH_SHORT).show()
         }
         updateUI()
@@ -201,14 +212,20 @@ class PermissionsFragment : Fragment() {
         binding.tvQueryAppsStatus.setTextColor(resources.getColor(R.color.status_positive, null))
         binding.btnQueryApps.visibility = View.GONE
         
-        // Root status
+        // Root status & button
         binding.tvRootStatus.text = if (rootGranted) 
             getString(R.string.status_granted) else getString(R.string.status_not_granted)
         binding.tvRootStatus.setTextColor(resources.getColor(
             if (rootGranted) R.color.status_positive else R.color.status_neutral, null))
-        binding.ivRootCheck.visibility = if (binding.cardRoot.isChecked) View.VISIBLE else View.GONE
         
-        // Shizuku status
+        // Root: show check icon on right when selected, update button text
+        binding.ivRootCheck.visibility = if (rootGranted && binding.cardRoot.isChecked) View.VISIBLE else View.GONE
+        if (rootGranted) {
+            binding.btnCheckRoot.text = getString(R.string.status_access_granted)
+            binding.btnCheckRoot.isEnabled = false
+        }
+        
+        // Shizuku status & button
         val shizukuAvailable = permissionBridge.isShizukuAvailable()
         binding.tvShizukuStatus.text = when {
             shizukuGranted -> getString(R.string.status_granted)
@@ -217,9 +234,15 @@ class PermissionsFragment : Fragment() {
         }
         binding.tvShizukuStatus.setTextColor(resources.getColor(
             if (shizukuGranted) R.color.status_positive else R.color.status_neutral, null))
-        binding.ivShizukuCheck.visibility = if (binding.cardShizuku.isChecked) View.VISIBLE else View.GONE
         
-        // View only check
+        // Shizuku: show check icon on right when selected, update button text
+        binding.ivShizukuCheck.visibility = if (shizukuGranted && binding.cardShizuku.isChecked) View.VISIBLE else View.GONE
+        if (shizukuGranted) {
+            binding.btnCheckShizuku.text = getString(R.string.status_access_granted)
+            binding.btnCheckShizuku.isEnabled = false
+        }
+        
+        // View only: always show check when selected (no permission needed)
         binding.ivViewOnlyCheck.visibility = if (binding.cardViewOnly.isChecked) View.VISIBLE else View.GONE
         
         // Continue button - enabled if a mode is selected
@@ -229,7 +252,8 @@ class PermissionsFragment : Fragment() {
     
     private fun setupContinueButton() {
         binding.btnContinue.setOnClickListener {
-            (activity as? SetupActivity)?.completeSetup()
+            // Go to Disclaimer page (next step)
+            (activity as? SetupActivity)?.nextStep()
         }
     }
     

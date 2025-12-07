@@ -1,6 +1,7 @@
 package com.appcontrolx.ui
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
@@ -10,7 +11,6 @@ import com.appcontrolx.R
 import com.appcontrolx.databinding.ActivityMainBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
-import timber.log.Timber
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -22,7 +22,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
-        Timber.d("MainActivity created")
+        Log.d("MainActivity", "MainActivity created")
         setupNavigation()
         showWhatsNewIfNeeded()
     }
@@ -48,15 +48,16 @@ class MainActivity : AppCompatActivity() {
     
     private fun showWhatsNewDialog() {
         val whatsNew = """
-            |• MVVM Architecture with Hilt DI
-            |• Crash reporting with Firebase
-            |• Optimized release build
-            |• Smart app caching
-            |• Status badges
-            |• Tools tab with hidden settings
-            |• Activity Launcher
-            |• Batch operations
-            |• Enhanced security
+            |🏗️ MVVM Architecture + Hilt DI
+            |🔥 Firebase Crashlytics integration
+            |⚡ Optimized release build (ProGuard)
+            |📊 Beautiful About page with stats
+            |🚀 Activity Launcher with expandable groups
+            |🎯 Enhanced batch operations
+            |🔒 Runtime root/shizuku validation
+            |🛡️ Enhanced security & input validation
+            |🎨 Dark/Light theme toggle
+            |✨ Clean UI improvements
         """.trimMargin()
         
         MaterialAlertDialogBuilder(this)
