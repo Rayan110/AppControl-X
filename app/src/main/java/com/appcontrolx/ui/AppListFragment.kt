@@ -345,12 +345,12 @@ class AppListFragment : Fragment() {
         val pm = policyManager ?: return
         val rm = rollbackManager
         
-        // Get app names for display
+        // Quick app names - use package short name if not cached
         val appNames = packages.map { pkg -> 
             adapter.getAppName(pkg) ?: pkg.substringAfterLast(".")
         }
         
-        // Show new BottomSheet with countdown
+        // Show BottomSheet IMMEDIATELY
         val bottomSheet = BatchProgressBottomSheet.newInstance(
             actionName = action.name,
             appNames = appNames,
@@ -375,10 +375,12 @@ class AppListFragment : Fragment() {
                 loadApps(forceRefresh = true)
             }
         )
+        
+        // Show immediately without waiting
         bottomSheet.show(childFragmentManager, BatchProgressBottomSheet.TAG)
         
-        // Save snapshot before action
-        lifecycleScope.launch {
+        // Save snapshot in background (non-blocking)
+        lifecycleScope.launch(Dispatchers.IO) {
             rm?.saveSnapshot(packages)
         }
     }

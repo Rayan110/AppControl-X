@@ -50,8 +50,18 @@ class AppListAdapter(
     
     fun isAllSelected(): Boolean = selectedPackages.size == currentList.size && currentList.isNotEmpty()
     
+    // Cache for O(1) lookup
+    private val appNameCache = mutableMapOf<String, String>()
+    
+    override fun submitList(list: List<AppInfo>?) {
+        // Build cache when list is submitted
+        appNameCache.clear()
+        list?.forEach { appNameCache[it.packageName] = it.appName }
+        super.submitList(list)
+    }
+    
     fun getAppName(packageName: String): String? {
-        return currentList.find { it.packageName == packageName }?.appName
+        return appNameCache[packageName]
     }
     
     private fun toggleSelection(packageName: String) {
