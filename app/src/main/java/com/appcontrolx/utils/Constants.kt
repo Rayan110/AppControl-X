@@ -8,6 +8,7 @@ object Constants {
     const val PREFS_PROTECT_SYSTEM = "protect_system"
     const val PREFS_AUTO_SNAPSHOT = "auto_snapshot"
     const val PREFS_THEME = "theme"
+    const val PREFS_LANGUAGE = "language"
     
     const val MODE_ROOT = "root"
     const val MODE_SHIZUKU = "shizuku"

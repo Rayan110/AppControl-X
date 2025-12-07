@@ -159,6 +159,11 @@
     <string name="theme_system">System Default</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_language_desc">Choose app language</string>
+    <string name="language_system">System Default</string>
+    <string name="language_english">English</string>
+    <string name="language_indonesian">Bahasa Indonesia</string>
     
     <!-- App Detail -->
     <string name="btn_info">App Info</string>

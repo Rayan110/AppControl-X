@@ -46,6 +46,7 @@ class SettingsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         
         setupTheme()
+        setupLanguage()
         setupCurrentMode()
         setupSafetySettings()
         setupRollbackSettings()
@@ -86,6 +87,64 @@ class SettingsFragment : Fragment() {
             AppCompatDelegate.MODE_NIGHT_YES -> getString(R.string.theme_dark)
             else -> getString(R.string.theme_system)
         }
+    }
+    
+    private fun setupLanguage() {
+        updateLanguageText()
+        
+        binding.itemLanguage.setOnClickListener {
+            val languages = arrayOf(
+                getString(R.string.language_system),
+                getString(R.string.language_english),
+                getString(R.string.language_indonesian)
+            )
+            val languageCodes = arrayOf("system", "en", "id")
+            
+            val currentLang = prefs.getString(Constants.PREFS_LANGUAGE, "system") ?: "system"
+            val currentIndex = languageCodes.indexOf(currentLang).coerceAtLeast(0)
+            
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.settings_language)
+                .setSingleChoiceItems(languages, currentIndex) { dialog, which ->
+                    val selectedLang = languageCodes[which]
+                    prefs.edit().putString(Constants.PREFS_LANGUAGE, selectedLang).apply()
+                    applyLanguage(selectedLang)
+                    updateLanguageText()
+                    dialog.dismiss()
+                }
+                .setNegativeButton(android.R.string.cancel, null)
+                .show()
+        }
+    }
+    
+    private fun updateLanguageText() {
+        val currentLang = prefs.getString(Constants.PREFS_LANGUAGE, "system") ?: "system"
+        binding.tvCurrentLanguage.text = when (currentLang) {
+            "en" -> getString(R.string.language_english)
+            "id" -> getString(R.string.language_indonesian)
+            else -> getString(R.string.language_system)
+        }
+    }
+    
+    private fun applyLanguage(langCode: String) {
+        val locale = when (langCode) {
+            "en" -> java.util.Locale.ENGLISH
+            "id" -> java.util.Locale("id", "ID")
+            else -> java.util.Locale.getDefault()
+        }
+        
+        val config = resources.configuration
+        config.setLocale(locale)
+        
+        // Restart activity to apply
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.settings_language)
+            .setMessage(R.string.settings_restart_required)
+            .setPositiveButton(R.string.settings_restart_now) { _, _ ->
+                restartApp()
+            }
+            .setNegativeButton(R.string.settings_restart_later, null)
+            .show()
     }
     
     private fun setupCurrentMode() {
