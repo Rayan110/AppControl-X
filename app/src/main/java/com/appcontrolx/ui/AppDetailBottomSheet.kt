@@ -18,7 +18,7 @@ import com.appcontrolx.model.AppInfo
 import com.appcontrolx.model.ExecutionMode
 import com.appcontrolx.rollback.ActionLog
 import com.appcontrolx.rollback.RollbackManager
-import com.appcontrolx.service.BackgroundStatus
+
 import com.appcontrolx.service.BatteryPolicyManager
 import com.appcontrolx.service.PermissionBridge
 import com.appcontrolx.utils.SafetyValidator
@@ -28,9 +28,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+
 
 class AppDetailBottomSheet : BottomSheetDialogFragment() {
     
@@ -42,7 +40,7 @@ class AppDetailBottomSheet : BottomSheetDialogFragment() {
     private var policyManager: BatteryPolicyManager? = null
     private var rollbackManager: RollbackManager? = null
     private var executionMode: ExecutionMode = ExecutionMode.None
-    private var currentBgStatus: BackgroundStatus = BackgroundStatus.DEFAULT
+
     
     var onActionCompleted: (() -> Unit)? = null
     
@@ -132,17 +130,6 @@ class AppDetailBottomSheet : BottomSheetDialogFragment() {
             binding.tvMinSdk.text = getString(R.string.detail_sdk_format,
                 packageInfo.applicationInfo.minSdkVersion)
             
-            // Dates
-            val dateFormat = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
-            binding.tvInstallDate.text = dateFormat.format(Date(packageInfo.firstInstallTime))
-            binding.tvUpdateDate.text = dateFormat.format(Date(packageInfo.lastUpdateTime))
-            
-            // Status
-            binding.tvStatus.text = if (isEnabled) getString(R.string.status_enabled) 
-                                    else getString(R.string.status_disabled)
-            binding.tvStatus.setTextColor(resources.getColor(
-                if (isEnabled) R.color.status_positive else R.color.status_negative, null))
-            
             // Permissions count
             val permCount = packageInfo.requestedPermissions?.size ?: 0
             binding.tvPermissions.text = getString(R.string.detail_permissions_count, permCount)
@@ -170,34 +157,46 @@ class AppDetailBottomSheet : BottomSheetDialogFragment() {
         val packageName = arguments?.getString(ARG_PACKAGE_NAME) ?: return
         
         lifecycleScope.launch {
-            currentBgStatus = withContext(Dispatchers.IO) {
-                policyManager?.getBackgroundStatus(packageName) ?: BackgroundStatus.DEFAULT
+            // Load detailed background state via root commands
+            val (runInBg, runAnyInBg) = withContext(Dispatchers.IO) {
+                if (executor != null) {
+                    val runInBgResult = executor!!.execute("appops get $packageName RUN_IN_BACKGROUND")
+                    val runAnyInBgResult = executor!!.execute("appops get $packageName RUN_ANY_IN_BACKGROUND")
+                    Pair(
+                        parseAppOpsOutput(runInBgResult.getOrDefault("")),
+                        parseAppOpsOutput(runAnyInBgResult.getOrDefault(""))
+                    )
+                } else {
+                    Pair("N/A", "N/A")
+                }
             }
             
-            updateBatteryStatusUI()
+            updateBatteryStatusUI(runInBg, runAnyInBg)
         }
     }
     
-    private fun updateBatteryStatusUI() {
-        val (text, color) = when (currentBgStatus) {
-            BackgroundStatus.RESTRICTED -> Pair(
-                getString(R.string.status_restricted),
-                R.color.status_negative
-            )
-            BackgroundStatus.ALLOWED -> Pair(
-                getString(R.string.status_allowed),
-                R.color.status_positive
-            )
-            BackgroundStatus.DEFAULT -> Pair(
-                getString(R.string.status_default),
-                R.color.status_neutral
-            )
+    private fun parseAppOpsOutput(output: String): String {
+        return when {
+            output.contains("ignore") -> "ignore"
+            output.contains("deny") -> "deny"
+            output.contains("allow") -> "allow"
+            output.contains("default") -> "default"
+            else -> "unknown"
         }
+    }
+    
+    private fun updateBatteryStatusUI(runInBg: String, runAnyInBg: String) {
+        // RUN_IN_BACKGROUND
+        binding.tvRunInBg.text = runInBg
+        binding.tvRunInBg.setTextColor(resources.getColor(
+            if (runInBg == "ignore" || runInBg == "deny") R.color.status_negative 
+            else R.color.status_positive, null))
         
-        binding.tvBatteryStatus.text = text
-        binding.tvBatteryStatus.setTextColor(resources.getColor(color, null))
-        
-        // Both buttons always visible - no hide/show
+        // RUN_ANY_IN_BACKGROUND
+        binding.tvRunAnyInBg.text = runAnyInBg
+        binding.tvRunAnyInBg.setTextColor(resources.getColor(
+            if (runAnyInBg == "ignore" || runAnyInBg == "deny") R.color.status_negative 
+            else R.color.status_positive, null))
     }
     
     private fun setupButtons() {
@@ -277,6 +276,7 @@ class AppDetailBottomSheet : BottomSheetDialogFragment() {
         
         binding.btnLaunchApp.setOnClickListener { launchApp() }
         binding.btnOpenSettings.setOnClickListener { openAppSettings() }
+        binding.btnAospInfo.setOnClickListener { openAospAppInfo() }
     }
     
     private fun launchApp() {
@@ -382,12 +382,8 @@ class AppDetailBottomSheet : BottomSheetDialogFragment() {
                 }
                 
                 if (success) {
-                    // Refresh background status
-                    val packageName = appInfo?.packageName ?: return@launch
-                    currentBgStatus = withContext(Dispatchers.IO) {
-                        policyManager?.getBackgroundStatus(packageName) ?: BackgroundStatus.DEFAULT
-                    }
-                    updateBatteryStatusUI()
+                    // Refresh background status display
+                    loadBatteryStatus()
                     
                     binding.tvActionStatus.text = getString(R.string.action_completed, actionName)
                     binding.tvActionStatus.setTextColor(resources.getColor(R.color.status_positive, null))
@@ -418,6 +414,7 @@ class AppDetailBottomSheet : BottomSheetDialogFragment() {
         binding.btnUninstall.isEnabled = enabled
         binding.btnLaunchApp.isEnabled = enabled
         binding.btnOpenSettings.isEnabled = enabled
+        binding.btnAospInfo.isEnabled = enabled
     }
     
     private fun setButtonEnabled(button: MaterialButton, enabled: Boolean) {
@@ -433,6 +430,29 @@ class AppDetailBottomSheet : BottomSheetDialogFragment() {
             })
         } catch (e: Exception) {
             Toast.makeText(context, R.string.error_open_settings, Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    private fun openAospAppInfo() {
+        val packageName = appInfo?.packageName ?: return
+        try {
+            // Use explicit AOSP Settings intent that won't be overridden by custom ROMs
+            val intent = Intent().apply {
+                setClassName("com.android.settings", "com.android.settings.applications.InstalledAppDetails")
+                putExtra("package", packageName)
+                putExtra("com.android.settings.ApplicationPkgName", packageName)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            startActivity(intent)
+        } catch (e: Exception) {
+            // Fallback to standard settings
+            try {
+                startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.parse("package:$packageName")
+                })
+            } catch (e2: Exception) {
+                Toast.makeText(context, R.string.error_open_settings, Toast.LENGTH_SHORT).show()
+            }
         }
     }
     

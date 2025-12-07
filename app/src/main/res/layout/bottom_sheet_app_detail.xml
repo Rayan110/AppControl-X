@@ -112,46 +112,62 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Status Row -->
+            <!-- Background State Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/detail_bg_state"
+                android:textStyle="bold"
+                android:textSize="13sp"
+                android:textColor="@color/primary" />
+
+            <!-- RUN_IN_BACKGROUND -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:paddingVertical="6dp">
+                android:paddingVertical="4dp"
+                android:layout_marginTop="8dp">
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/detail_status"
-                    android:textColor="@color/on_surface_secondary" />
+                    android:text="RUN_IN_BACKGROUND"
+                    android:textColor="@color/on_surface_secondary"
+                    android:textSize="12sp"
+                    android:fontFamily="monospace" />
                 <TextView
-                    android:id="@+id/tvStatus"
+                    android:id="@+id/tvRunInBg"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:textSize="12sp" />
             </LinearLayout>
 
-            <!-- Battery Status Row -->
+            <!-- RUN_ANY_IN_BACKGROUND -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:paddingVertical="6dp">
+                android:paddingVertical="4dp">
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/detail_battery"
-                    android:textColor="@color/on_surface_secondary" />
+                    android:text="RUN_ANY_IN_BACKGROUND"
+                    android:textColor="@color/on_surface_secondary"
+                    android:textSize="12sp"
+                    android:fontFamily="monospace" />
                 <TextView
-                    android:id="@+id/tvBatteryStatus"
+                    android:id="@+id/tvRunAnyInBg"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:textSize="12sp" />
             </LinearLayout>
 
             <View android:layout_width="match_parent" android:layout_height="1dp" 
-                android:background="@color/outline" android:layout_marginVertical="8dp" />
+                android:background="@color/outline" android:layout_marginVertical="12dp" />
 
             <!-- App Size -->
             <LinearLayout
@@ -242,47 +258,6 @@
                 android:textSize="11sp"
                 android:fontFamily="monospace"
                 android:textIsSelectable="true" />
-
-            <View android:layout_width="match_parent" android:layout_height="1dp" 
-                android:background="@color/outline" android:layout_marginVertical="8dp" />
-
-            <!-- Installed -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:paddingVertical="6dp">
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/detail_installed"
-                    android:textColor="@color/on_surface_secondary" />
-                <TextView
-                    android:id="@+id/tvInstallDate"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="12sp" />
-            </LinearLayout>
-
-            <!-- Updated -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:paddingVertical="6dp">
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/detail_updated"
-                    android:textColor="@color/on_surface_secondary" />
-                <TextView
-                    android:id="@+id/tvUpdateDate"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="12sp" />
-            </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
@@ -295,7 +270,7 @@
         android:textStyle="bold"
         android:textSize="14sp" />
 
-    <!-- Actions Grid - 3 columns, ordered by safety -->
+    <!-- Actions Grid - 3 columns -->
     <GridLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -387,7 +362,7 @@
             app:iconTint="@color/status_negative"
             style="@style/Widget.Material3.Button.TonalButton" />
 
-        <!-- Row 3: Restrict BG, Allow BG -->
+        <!-- Row 3: Restrict BG, Allow BG, AOSP Info -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnRestrictBg"
             android:layout_width="0dp"
@@ -409,6 +384,19 @@
             android:text="@string/action_allow_bg"
             android:textSize="10sp"
             app:icon="@drawable/ic_check_circle"
+            app:iconSize="20dp"
+            app:iconGravity="top"
+            app:iconPadding="2dp"
+            style="@style/Widget.Material3.Button.TonalButton" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAospInfo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:text="@string/action_aosp_info"
+            android:textSize="10sp"
+            app:icon="@drawable/ic_settings"
             app:iconSize="20dp"
             app:iconGravity="top"
             app:iconPadding="2dp"
