@@ -17,7 +17,9 @@ A powerful Android application for controlling app behavior, battery optimizatio
 - **Real-time Status** - View current background restriction status per app
 
 ### Tools
-- **Activity Launcher** - Launch hidden activities from any app
+- **Activity Launcher** - Launch hidden activities from any app (long press to copy)
+- **Manage Unknown Sources** - Control app install permissions
+- **Manage Apps (AOSP)** - Pure AOSP app manager
 - **Extra Dim** - Reduce screen brightness below minimum
 - **Notification Log/History** - Access notification records
 - **Battery Usage** - View app battery consumption
@@ -37,14 +39,20 @@ A powerful Android application for controlling app behavior, battery optimizatio
 |----------|---------|---------|
 | Android Stock | 10 - 15 | Full |
 | MIUI/HyperOS | 12+ | Full |
+| Samsung OneUI | 3+ | Full |
+| ColorOS/Realme | 11+ | Full |
+| OxygenOS | 11+ | Full |
 | Custom ROM | Android 10+ | Full |
+
+### Protected System Apps
+SafetyValidator blocks critical system packages from being disabled/frozen to prevent bricking. Covers AOSP, Google, Xiaomi, Samsung, OPPO, Vivo, Huawei, OnePlus, Nothing, and more.
 
 ## Requirements
 
 - Android 10+ (API 29)
 - One of the following:
   - **Root access** (Magisk recommended)
-  - **Shizuku** installed and activated
+  - **Shizuku** installed and activated (full features, no root needed)
 
 ## Installation
 
@@ -119,7 +127,7 @@ appops set <package> WAKE_LOCK ignore            # Disable wake lock
 
 | Issue | Status | Impact |
 |-------|--------|--------|
-| App running detection may fail | Won't Fix (Lazy) | Sorting by running status doesn't work reliably |
+| Running detection uses inverse logic | By Design | Apps without STOPPED/FROZEN badge = RUNNING |
 
 ## Contributing
 

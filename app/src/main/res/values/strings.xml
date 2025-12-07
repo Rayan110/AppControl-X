@@ -238,7 +238,7 @@
     <string name="log_title">Action Logs</string>
     <string name="log_clear_all">Clear All</string>
     <string name="log_empty">No actions logged yet</string>
-    <string name="log_no_mode">Root mode required</string>
+    <string name="log_no_mode">Root or Shizuku mode required</string>
     <string name="log_packages_count">%d packages</string>
     <string name="log_status_success">Success</string>
     <string name="log_status_failed">Failed</string>
