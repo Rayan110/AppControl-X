@@ -94,6 +94,7 @@ object SafetyValidator {
         
         // === Samsung Core ===
         "com.samsung.android.providers.context",
+        "com.samsung.android.providers.contacts",
         "com.samsung.android.incallui",
         "com.samsung.android.telecom",
         "com.samsung.android.app.telephonyui",
@@ -103,17 +104,63 @@ object SafetyValidator {
         "com.sec.android.app.launcher",
         "com.sec.android.provider.badge",
         "com.sec.android.inputmethod",
+        "com.sec.android.app.samsungapps",  // Galaxy Store
+        "com.samsung.android.messaging",
+        "com.samsung.android.dialer",
+        "com.samsung.android.oneconnect",   // SmartThings
+        "com.samsung.android.samsungpass",
+        "com.samsung.android.authfw",
+        "com.samsung.android.knox.containercore",
         
         // === OPPO/ColorOS/Realme Core ===
         "com.coloros.providers.downloads",
         "com.coloros.systemui",
         "com.coloros.phonemanager",
+        "com.coloros.launcher",
         "com.oplus.battery",
         "com.oplus.athena",
+        "com.oplus.safecenter",
+        "com.heytap.market",                // OPPO/Realme App Store
+        "com.realme.findphone",
+        "com.oppo.launcher",
+        "com.oppo.market",
         
         // === OnePlus/OxygenOS Core ===
         "com.oneplus.config",
         "net.oneplus.provider.appsettings",
+        "com.oneplus.launcher",
+        "net.oneplus.launcher",
+        "com.oneplus.account",
+        
+        // === Huawei/HarmonyOS Core ===
+        "com.huawei.android.launcher",
+        "com.huawei.appmarket",
+        "com.huawei.hwid",                  // Huawei ID
+        "com.huawei.hms.core",
+        "com.huawei.android.hsf",
+        "com.huawei.systemserver",
+        "com.huawei.android.pushagent",
+        
+        // === Vivo/FuntouchOS/OriginOS Core ===
+        "com.bbk.launcher2",
+        "com.vivo.appstore",
+        "com.vivo.daemonService",
+        "com.vivo.assistant",
+        "com.vivo.vivokaraoke",
+        
+        // === Nothing Phone ===
+        "com.nothing.launcher",
+        "com.nothing.systemui",
+        
+        // === ASUS ROG/ZenUI ===
+        "com.asus.launcher",
+        "com.asus.dm",
+        
+        // === Sony Xperia ===
+        "com.sonymobile.home",
+        
+        // === Motorola ===
+        "com.motorola.launcher3",
         
         // === Root/Shizuku/Tools ===
         "com.topjohnwu.magisk",
@@ -173,10 +220,20 @@ object SafetyValidator {
         "com.huawei.systemmanager",
         "com.huawei.powergenie",
         "com.huawei.hicloud",
+        "com.huawei.iconnect",
+        "com.huawei.intelligent",
         
         // === Vivo/FuntouchOS ===
         "com.vivo.permissionmanager",
         "com.iqoo.secure",
+        "com.vivo.browser",
+        "com.vivo.weather",
+        
+        // === Realme ===
+        "com.realme.security",
+        
+        // === Nothing Phone ===
+        "com.nothing.smartcenter",
         
         // === Google Find My Device ===
         "com.google.android.apps.adm"
