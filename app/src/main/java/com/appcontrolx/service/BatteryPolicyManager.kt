@@ -34,20 +34,41 @@ class BatteryPolicyManager(private val executor: CommandExecutor) {
     
     fun restrictBackground(packageName: String): Result<Unit> {
         validatePackageName(packageName).onFailure { return Result.failure(it) }
+        
+        // Comprehensive background restriction
         val commands = listOf(
+            // Core background restrictions
             "appops set $packageName RUN_IN_BACKGROUND ignore",
             "appops set $packageName RUN_ANY_IN_BACKGROUND ignore",
-            "appops set $packageName WAKE_LOCK ignore"
+            
+            // Wake lock & alarms
+            "appops set $packageName WAKE_LOCK ignore",
+            "appops set $packageName SCHEDULE_EXACT_ALARM ignore",
+            
+            // Boot & startup
+            "appops set $packageName BOOT_COMPLETED ignore",
+            
+            // Also use cmd appops for newer Android
+            "cmd appops set $packageName RUN_IN_BACKGROUND ignore",
+            "cmd appops set $packageName RUN_ANY_IN_BACKGROUND ignore",
+            
+            // Force stop after restricting to kill current processes
+            "am force-stop $packageName"
         )
         return executor.executeBatch(commands)
     }
     
     fun allowBackground(packageName: String): Result<Unit> {
         validatePackageName(packageName).onFailure { return Result.failure(it) }
+        
         val commands = listOf(
             "appops set $packageName RUN_IN_BACKGROUND allow",
             "appops set $packageName RUN_ANY_IN_BACKGROUND allow",
-            "appops set $packageName WAKE_LOCK allow"
+            "appops set $packageName WAKE_LOCK allow",
+            "appops set $packageName SCHEDULE_EXACT_ALARM allow",
+            "appops set $packageName BOOT_COMPLETED allow",
+            "cmd appops set $packageName RUN_IN_BACKGROUND allow",
+            "cmd appops set $packageName RUN_ANY_IN_BACKGROUND allow"
         )
         return executor.executeBatch(commands)
     }
