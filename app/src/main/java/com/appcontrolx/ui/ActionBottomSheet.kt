@@ -17,7 +17,8 @@ class ActionBottomSheet : BottomSheetDialogFragment() {
     
     enum class Action {
         FREEZE, UNFREEZE, UNINSTALL, FORCE_STOP,
-        RESTRICT_BACKGROUND, ALLOW_BACKGROUND
+        RESTRICT_BACKGROUND, ALLOW_BACKGROUND,
+        CLEAR_CACHE, CLEAR_DATA, LAUNCH_APPS
     }
     
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -58,6 +59,21 @@ class ActionBottomSheet : BottomSheetDialogFragment() {
         
         binding.btnAllowBg.setOnClickListener { 
             onActionSelected?.invoke(Action.ALLOW_BACKGROUND)
+            dismiss()
+        }
+        
+        binding.btnClearCache.setOnClickListener { 
+            onActionSelected?.invoke(Action.CLEAR_CACHE)
+            dismiss()
+        }
+        
+        binding.btnClearData.setOnClickListener { 
+            onActionSelected?.invoke(Action.CLEAR_DATA)
+            dismiss()
+        }
+        
+        binding.btnLaunchApps.setOnClickListener { 
+            onActionSelected?.invoke(Action.LAUNCH_APPS)
             dismiss()
         }
     }

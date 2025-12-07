@@ -291,9 +291,26 @@ class AppListFragment : Fragment() {
                 ActionBottomSheet.Action.FORCE_STOP -> "Stopped"
                 ActionBottomSheet.Action.RESTRICT_BACKGROUND -> "Restricted"
                 ActionBottomSheet.Action.ALLOW_BACKGROUND -> "Allowed"
+                ActionBottomSheet.Action.CLEAR_CACHE -> "Cache Cleared"
+                ActionBottomSheet.Action.CLEAR_DATA -> "Data Cleared"
+                ActionBottomSheet.Action.LAUNCH_APPS -> "Launched"
             }
         } else {
             "Failed"
+        }
+    }
+    
+    private fun launchApp(packageName: String): Result<Unit> {
+        return try {
+            val intent = requireContext().packageManager.getLaunchIntentForPackage(packageName)
+            if (intent != null) {
+                startActivity(intent)
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("No launcher activity"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 
@@ -325,6 +342,9 @@ class AppListFragment : Fragment() {
                                 ActionBottomSheet.Action.FORCE_STOP -> pm.forceStop(pkg)
                                 ActionBottomSheet.Action.RESTRICT_BACKGROUND -> pm.restrictBackground(pkg)
                                 ActionBottomSheet.Action.ALLOW_BACKGROUND -> pm.allowBackground(pkg)
+                                ActionBottomSheet.Action.CLEAR_CACHE -> executor?.execute("pm clear --cache-only $pkg") ?: Result.failure(Exception("No executor"))
+                                ActionBottomSheet.Action.CLEAR_DATA -> executor?.execute("pm clear $pkg") ?: Result.failure(Exception("No executor"))
+                                ActionBottomSheet.Action.LAUNCH_APPS -> launchApp(pkg)
                             }
                         }
                         

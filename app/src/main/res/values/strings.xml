@@ -284,6 +284,7 @@
     <string name="action_clear_cache">Clear Cache</string>
     <string name="action_clear_data">Clear Data</string>
     <string name="action_launch">Launch</string>
+    <string name="action_launch_apps">Launch Apps</string>
     <string name="error_no_launcher">App has no launcher activity</string>
     <string name="error_launch_failed">Failed to launch app</string>
     
