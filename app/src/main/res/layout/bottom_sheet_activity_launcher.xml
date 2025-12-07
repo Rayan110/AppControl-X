@@ -35,11 +35,20 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="12dp"
-        android:layout_marginBottom="8dp"
         android:background="@drawable/rounded_bg"
         android:backgroundTint="@color/surface"
         app:iconifiedByDefault="false"
         app:queryHint="@string/search_hint" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/activity_launcher_hint"
+        android:textColor="@color/on_surface_secondary"
+        android:textSize="12sp" />
 
     <!-- Filter Chips -->
     <LinearLayout
