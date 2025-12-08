@@ -48,6 +48,13 @@ class MainActivity : AppCompatActivity() {
     
     private fun showWhatsNewDialog() {
         val updateLog = """
+            |v1.1.0
+            |• Showcase website with gallery
+            |• Expanded background ops viewer
+            |• Autostart Manager (13 OEM brands)
+            |• App sheet stacking fix
+            |• ProGuard fixes for release builds
+            |
             |v1.0.0
             |• Initial release
             |• Freeze/Unfreeze apps
@@ -56,8 +63,6 @@ class MainActivity : AppCompatActivity() {
             |• Batch operations with progress
             |• Activity Launcher
             |• Action Logs with rollback
-            |• Status filter
-            |• Dark/Light theme
         """.trimMargin()
         
         MaterialAlertDialogBuilder(this)
