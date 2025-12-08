@@ -208,17 +208,17 @@ class AppListFragment : Fragment() {
     }
     
     private fun showAppDetail(app: AppInfo) {
+        // Prevent multiple sheets - dismiss existing one first
+        val existingSheet = childFragmentManager.findFragmentByTag(AppDetailBottomSheet.TAG)
+        if (existingSheet != null) {
+            (existingSheet as? AppDetailBottomSheet)?.dismissAllowingStateLoss()
+        }
+        
         val bottomSheet = AppDetailBottomSheet.newInstance(app)
         bottomSheet.onActionCompleted = {
-            // Will refresh when sheet is dismissed
-        }
-        bottomSheet.show(childFragmentManager, AppDetailBottomSheet.TAG)
-        
-        // Refresh list when sheet is dismissed (after any action)
-        childFragmentManager.executePendingTransactions()
-        bottomSheet.dialog?.setOnDismissListener {
             refreshAppList()
         }
+        bottomSheet.show(childFragmentManager, AppDetailBottomSheet.TAG)
     }
     
     private fun setupChips() {
