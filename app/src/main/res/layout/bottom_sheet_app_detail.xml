@@ -113,13 +113,30 @@
             android:padding="16dp">
 
             <!-- Background State Section -->
-            <TextView
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/detail_bg_state"
-                android:textStyle="bold"
-                android:textSize="13sp"
-                android:textColor="@color/primary" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/detail_bg_state"
+                    android:textStyle="bold"
+                    android:textSize="13sp"
+                    android:textColor="@color/primary" />
+
+                <ImageView
+                    android:id="@+id/btnExpandOps"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_expand_more"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/detail_show_more_ops"
+                    app:tint="@color/on_surface_secondary" />
+            </LinearLayout>
 
             <!-- RUN_IN_BACKGROUND -->
             <LinearLayout
@@ -174,6 +191,121 @@
                 android:textColor="@color/on_surface_secondary"
                 android:textSize="10sp"
                 android:fontStyle="italic" />
+
+            <!-- Expanded Ops Container -->
+            <LinearLayout
+                android:id="@+id/expandedOpsContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone"
+                android:layout_marginTop="8dp">
+
+                <!-- WAKE_LOCK -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingVertical="3dp">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="WAKE_LOCK"
+                        android:textColor="@color/on_surface_secondary"
+                        android:textSize="11sp"
+                        android:fontFamily="monospace" />
+                    <TextView
+                        android:id="@+id/tvWakeLock"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="11sp" />
+                </LinearLayout>
+
+                <!-- START_FOREGROUND -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingVertical="3dp">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="START_FOREGROUND"
+                        android:textColor="@color/on_surface_secondary"
+                        android:textSize="11sp"
+                        android:fontFamily="monospace" />
+                    <TextView
+                        android:id="@+id/tvStartForeground"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="11sp" />
+                </LinearLayout>
+
+                <!-- BOOT_COMPLETED -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingVertical="3dp">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="BOOT_COMPLETED"
+                        android:textColor="@color/on_surface_secondary"
+                        android:textSize="11sp"
+                        android:fontFamily="monospace" />
+                    <TextView
+                        android:id="@+id/tvBootCompleted"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="11sp" />
+                </LinearLayout>
+
+                <!-- SYSTEM_ALERT_WINDOW -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingVertical="3dp">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="SYSTEM_ALERT_WINDOW"
+                        android:textColor="@color/on_surface_secondary"
+                        android:textSize="11sp"
+                        android:fontFamily="monospace" />
+                    <TextView
+                        android:id="@+id/tvSystemAlertWindow"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="11sp" />
+                </LinearLayout>
+
+                <!-- REQUEST_INSTALL_PACKAGES -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingVertical="3dp">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="REQUEST_INSTALL_PACKAGES"
+                        android:textColor="@color/on_surface_secondary"
+                        android:textSize="11sp"
+                        android:fontFamily="monospace" />
+                    <TextView
+                        android:id="@+id/tvRequestInstall"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="11sp" />
+                </LinearLayout>
+            </LinearLayout>
 
             <View android:layout_width="match_parent" android:layout_height="1dp" 
                 android:background="@color/outline" android:layout_marginVertical="12dp" />

@@ -2,7 +2,12 @@
 
 All notable changes to AppControlX.
 
-## [1.0.1] - 2024-12
+## [1.1.0] - 2024-12
+
+### Added
+- Showcase website (index.html) with responsive design, 3 themes, image gallery with lightbox
+- Expanded background ops viewer in app detail (WAKE_LOCK, START_FOREGROUND, BOOT_COMPLETED, etc.)
+- Other Projects backlinks section in website
 
 ### Fixed
 - App info sheet stacking bug when returning from recent apps
@@ -14,6 +19,7 @@ All notable changes to AppControlX.
 - Autostart Manager now supports 13 OEM brands (Xiaomi, OPPO, Vivo, Huawei, OnePlus, Samsung, ASUS, Sony, Lenovo, ZTE, Meizu, Transsion)
 - Activity Launcher moved to Apps section
 - Added RUN_ANY_IN_BACKGROUND hint in app detail sheet
+- Hero section redesigned with app preview image
 
 ---
 

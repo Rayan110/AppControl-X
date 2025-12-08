@@ -189,6 +189,7 @@
     <string name="detail_user_app">User App</string>
     <string name="detail_quick_actions">Quick Actions</string>
     <string name="detail_bg_state">Background State</string>
+    <string name="detail_show_more_ops">Show more operations</string>
     <string name="action_aosp_info">AOSP Info</string>
     <string name="detail_open_settings">Open in System Settings</string>
     <string name="action_disable">Disable</string>

@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AppControlX - Control Your Apps</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <meta name="referrer" content="no-referrer">
+    <style>
+        :root {
+            --bg: #ffffff;
+            --bg-secondary: #f5f5f5;
+            --text: #1a1a1a;
+            --text-secondary: #666666;
+            --accent: #6750A4;
+            --accent-light: #E8DEF8;
+            --card-bg: #ffffff;
+            --border: #e0e0e0;
+        }
+
+        [data-theme="dark"] {
+            --bg: #121212;
+            --bg-secondary: #1e1e1e;
+            --text: #ffffff;
+            --text-secondary: #b0b0b0;
+            --accent: #D0BCFF;
+            --accent-light: #4A4458;
+            --card-bg: #1e1e1e;
+            --border: #333333;
+        }
+
+        [data-theme="midnight"] {
+            --bg: #0a1628;
+            --bg-secondary: #132238;
+            --text: #e0f0ff;
+            --text-secondary: #8ab4d8;
+            --accent: #64B5F6;
+            --accent-light: #1a3a5c;
+            --card-bg: #132238;
+            --border: #1e3a5f;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            background: var(--bg);
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .theme-switcher {
+            display: flex;
+            gap: 8px;
+        }
+
+        .theme-btn {
+            width: 36px;
+            height: 36px;
+            border: 2px solid var(--border);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-secondary);
+            color: var(--text);
+        }
+
+        .theme-btn:hover, .theme-btn.active {
+            border-color: var(--accent);
+            background: var(--accent-light);
+        }
+
+        /* Hero */
+        .hero {
+            padding: 60px 0 80px;
+        }
+
+        .hero-content {
+            display: flex;
+            align-items: center;
+            gap: 60px;
+        }
+
+        .hero-text {
+            flex: 1;
+        }
+
+        .hero-image {
+            flex: 0 0 auto;
+        }
+
+        .hero-image img {
+            height: 520px;
+            width: auto;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(103, 80, 164, 0.2);
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            color: var(--text);
+            line-height: 1.1;
+        }
+
+        .hero h1 span {
+            color: var(--accent);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            line-height: 1.7;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 900px) {
+            .hero-content {
+                flex-direction: column-reverse;
+                text-align: center;
+            }
+            .hero-buttons {
+                justify-content: center;
+            }
+            .hero-image img {
+                height: 400px;
+            }
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--accent-light);
+        }
+
+        /* Features */
+        .features {
+            padding: 60px 0;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 40px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--accent-light);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            color: var(--accent);
+            font-size: 1.25rem;
+        }
+
+        .feature-card h3 {
+            margin-bottom: 8px;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Gallery */
+        .gallery {
+            padding: 60px 0;
+            background: var(--bg-secondary);
+        }
+
+        .gallery-container {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .gallery-track {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scroll-behavior: smooth;
+            padding: 20px 0;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .gallery-track::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .gallery-track::-webkit-scrollbar-track {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        .gallery-track::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 4px;
+        }
+
+        .gallery-item {
+            flex: 0 0 auto;
+            scroll-snap-align: center;
+        }
+
+        .gallery-item img {
+            height: 500px;
+            width: auto;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .gallery-item img:hover {
+            transform: scale(1.02);
+        }
+
+        .gallery-nav {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .gallery-nav button {
+            width: 44px;
+            height: 44px;
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            background: var(--card-bg);
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .gallery-nav button:hover {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+
+        /* Requirements */
+        .requirements {
+            padding: 60px 0;
+        }
+
+        .req-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .req-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .req-card h3 {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            color: var(--accent);
+        }
+
+        .req-card ul {
+            list-style: none;
+        }
+
+        .req-card li {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-secondary);
+        }
+
+        .req-card li i {
+            color: var(--accent);
+        }
+
+        /* Other Projects */
+        .other-projects {
+            padding: 60px 0;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .project-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            text-decoration: none;
+            color: var(--text);
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+            display: block;
+        }
+
+        .project-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            border-color: var(--accent);
+        }
+
+        .project-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--accent-light);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            color: var(--accent);
+            font-size: 1.25rem;
+        }
+
+        .project-card h3 {
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .project-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* Footer */
+        footer {
+            padding: 40px 0;
+            text-align: center;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 20px;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent);
+        }
+
+        .footer-credit {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lightbox.active {
+            display: flex;
+        }
+
+        .lightbox-backdrop {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: -1;
+        }
+
+        .lightbox img {
+            max-height: 90vh;
+            max-width: 80vw;
+            border-radius: 8px;
+            z-index: 1;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 44px;
+            height: 44px;
+            border: none;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.25rem;
+            z-index: 2;
+            transition: background 0.2s;
+        }
+
+        .lightbox-close:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            border: none;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.25rem;
+            z-index: 2;
+            transition: background 0.2s;
+        }
+
+        .lightbox-nav:hover {
+            background: rgba(255,255,255,0.25);
+        }
+
+        .lightbox-prev {
+            left: 20px;
+        }
+
+        .lightbox-next {
+            right: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .lightbox-nav {
+                width: 40px;
+                height: 40px;
+            }
+            .lightbox-prev {
+                left: 10px;
+            }
+            .lightbox-next {
+                right: 10px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+            .hero p {
+                font-size: 1rem;
+            }
+            .hero-image img {
+                height: 350px;
+            }
+            .gallery-item img {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body data-theme="light">
+    <header>
+        <div class="container header-content">
+            <div class="logo">AppControlX</div>
+            <div class="theme-switcher">
+                <button class="theme-btn active" data-theme="light" title="Light">
+                    <i class="fas fa-sun"></i>
+                </button>
+                <button class="theme-btn" data-theme="dark" title="Dark">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="theme-btn" data-theme="midnight" title="Midnight">
+                    <i class="fas fa-star"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1>Control Your <span>Apps</span></h1>
+                    <p>A powerful Android app for controlling app behavior, battery optimization, and system management. Freeze apps, restrict background activity, batch operations, and access hidden settings — all with Root or Shizuku support. Take full control of your device.</p>
+                    <div class="hero-buttons">
+                        <a href="https://github.com/risunCode/AppControl-X/releases" class="btn btn-primary">
+                            <i class="fas fa-download"></i> Download
+                        </a>
+                        <a href="https://github.com/risunCode/AppControl-X" class="btn btn-secondary">
+                            <i class="fab fa-github"></i> GitHub
+                        </a>
+                    </div>
+                </div>
+                <div class="hero-image">
+                    <img src="screenshots/3-main-apps.jpg" alt="AppControlX Preview">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-snowflake"></i></div>
+                    <h3>Freeze Apps</h3>
+                    <p>Disable apps without uninstalling. Keep your data intact while stopping unwanted apps.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-battery-half"></i></div>
+                    <h3>Battery Control</h3>
+                    <p>Restrict background activity and manage wake locks to extend battery life.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-layer-group"></i></div>
+                    <h3>Batch Operations</h3>
+                    <p>Apply actions to multiple apps at once with progress tracking.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-rocket"></i></div>
+                    <h3>Activity Launcher</h3>
+                    <p>Launch hidden activities from any app. Access secret settings and features.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-history"></i></div>
+                    <h3>Action Logs</h3>
+                    <p>Track all operations with timestamps. Rollback battery actions when needed.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                    <h3>System Protection</h3>
+                    <p>SafetyValidator blocks critical system apps from being disabled.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="gallery">
+        <div class="container">
+            <h2 class="section-title">Screenshots</h2>
+            <div class="gallery-container">
+                <div class="gallery-track" id="galleryTrack">
+                    <div class="gallery-item"><img src="screenshots/1-setup-environtment.jpg" alt="Setup" onclick="openLightbox(this.src)"></div>
+                    <div class="gallery-item"><img src="screenshots/2-setup-environtment.jpg" alt="Setup 2" onclick="openLightbox(this.src)"></div>
+                    <div class="gallery-item"><img src="screenshots/3-main-apps.jpg" alt="Main Apps" onclick="openLightbox(this.src)"></div>
+                    <div class="gallery-item"><img src="screenshots/4-info-app.jpg" alt="App Info" onclick="openLightbox(this.src)"></div>
+                    <div class="gallery-item"><img src="screenshots/5-batch-operation.jpg" alt="Batch Operation" onclick="openLightbox(this.src)"></div>
+                    <div class="gallery-item"><img src="screenshots/6-ActivityLauncher.jpg" alt="Activity Launcher" onclick="openLightbox(this.src)"></div>
+                    <div class="gallery-item"><img src="screenshots/7-tools.jpg" alt="Tools" onclick="openLightbox(this.src)"></div>
+                    <div class="gallery-item"><img src="screenshots/8-settings.jpg" alt="Settings" onclick="openLightbox(this.src)"></div>
+                    <div class="gallery-item"><img src="screenshots/9-about.jpg" alt="About" onclick="openLightbox(this.src)"></div>
+                    <div class="gallery-item"><img src="screenshots/10-test-blocklist.jpg" alt="Blocklist" onclick="openLightbox(this.src)"></div>
+                </div>
+                <div class="gallery-nav">
+                    <button onclick="scrollGallery(-1)"><i class="fas fa-chevron-left"></i></button>
+                    <button onclick="scrollGallery(1)"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="requirements">
+        <div class="container">
+            <h2 class="section-title">Requirements</h2>
+            <div class="req-grid">
+                <div class="req-card">
+                    <h3><i class="fab fa-android"></i> System</h3>
+                    <ul>
+                        <li><i class="fas fa-check"></i> Android 10+ (API 29)</li>
+                        <li><i class="fas fa-check"></i> Root access (Magisk) OR</li>
+                        <li><i class="fas fa-check"></i> Shizuku installed & activated</li>
+                    </ul>
+                </div>
+                <div class="req-card">
+                    <h3><i class="fas fa-mobile-alt"></i> Supported ROMs</h3>
+                    <ul>
+                        <li><i class="fas fa-check"></i> Android Stock</li>
+                        <li><i class="fas fa-check"></i> MIUI / HyperOS</li>
+                        <li><i class="fas fa-check"></i> Samsung OneUI</li>
+                        <li><i class="fas fa-check"></i> ColorOS / OxygenOS</li>
+                        <li><i class="fas fa-check"></i> Custom ROMs</li>
+                    </ul>
+                </div>
+                <div class="req-card">
+                    <h3><i class="fas fa-unlock"></i> Without Root</h3>
+                    <ul>
+                        <li><i class="fas fa-check"></i> All Tools shortcuts</li>
+                        <li><i class="fas fa-check"></i> Activity Launcher</li>
+                        <li><i class="fas fa-check"></i> Autostart Manager</li>
+                        <li><i class="fas fa-check"></i> Browse installed apps</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="other-projects">
+        <div class="container">
+            <h2 class="section-title">Other Projects</h2>
+            <div class="projects-grid">
+                <a href="https://github.com/risunCode/SurfManager" class="project-card" target="_blank">
+                    <div class="project-icon"><i class="fas fa-code"></i></div>
+                    <h3>SurfManager</h3>
+                    <p>Reset IDE data, create backup and restore, manage multi-account easily. Works for VS-Code/fork based apps.</p>
+                </a>
+                <a href="https://github.com/risunCode/SesWi-Session-Manager" class="project-card" target="_blank">
+                    <div class="project-icon"><i class="fab fa-chrome"></i></div>
+                    <h3>SesWi Session Manager</h3>
+                    <p>A Chrome Extension that simply manage cookie & session securely.</p>
+                </a>
+                <a href="https://github.com/risunCode/Deadnet-Windows" class="project-card" target="_blank">
+                    <div class="project-icon"><i class="fas fa-network-wired"></i></div>
+                    <h3>Deadnet Windows</h3>
+                    <p>A DoS attack tool for local networks using dead router attack (IPv6) and ARP attack (IPv4) simultaneously.</p>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-links">
+                <a href="https://github.com/risunCode/AppControl-X"><i class="fab fa-github"></i> GitHub</a>
+                <a href="https://github.com/risunCode/AppControl-X/releases"><i class="fas fa-download"></i> Releases</a>
+                <a href="https://github.com/risunCode/AppControl-X/issues"><i class="fas fa-bug"></i> Report Bug</a>
+            </div>
+            <p class="footer-credit">Made with <i class="fas fa-heart" style="color: #e74c3c;"></i> by risunCode</p>
+        </div>
+    </footer>
+
+    <div class="lightbox" id="lightbox">
+        <button class="lightbox-close" onclick="closeLightbox()"><i class="fas fa-times"></i></button>
+        <button class="lightbox-nav lightbox-prev" onclick="navigateLightbox(-1)"><i class="fas fa-chevron-left"></i></button>
+        <img id="lightboxImg" src="" alt="Preview" onclick="event.stopPropagation()">
+        <button class="lightbox-nav lightbox-next" onclick="navigateLightbox(1)"><i class="fas fa-chevron-right"></i></button>
+        <div class="lightbox-backdrop" onclick="closeLightbox()"></div>
+    </div>
+
+    <script>
+        // Theme Switcher
+        const themeBtns = document.querySelectorAll('.theme-btn');
+        themeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const theme = btn.dataset.theme;
+                document.body.dataset.theme = theme;
+                themeBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                localStorage.setItem('theme', theme);
+            });
+        });
+
+        // Load saved theme (default: light)
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.body.dataset.theme = savedTheme;
+        themeBtns.forEach(b => b.classList.remove('active'));
+        document.querySelector(`[data-theme="${savedTheme}"]`)?.classList.add('active');
+
+        // Gallery Navigation
+        function scrollGallery(direction) {
+            const track = document.getElementById('galleryTrack');
+            const scrollAmount = 320;
+            track.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+        }
+
+        // Lightbox with navigation
+        const galleryImages = [
+            'screenshots/1-setup-environtment.jpg',
+            'screenshots/2-setup-environtment.jpg',
+            'screenshots/3-main-apps.jpg',
+            'screenshots/4-info-app.jpg',
+            'screenshots/5-batch-operation.jpg',
+            'screenshots/6-ActivityLauncher.jpg',
+            'screenshots/7-tools.jpg',
+            'screenshots/8-settings.jpg',
+            'screenshots/9-about.jpg',
+            'screenshots/10-test-blocklist.jpg'
+        ];
+        let currentImageIndex = 0;
+
+        function openLightbox(src) {
+            currentImageIndex = galleryImages.indexOf(src);
+            if (currentImageIndex === -1) currentImageIndex = 0;
+            document.getElementById('lightboxImg').src = src;
+            document.getElementById('lightbox').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function navigateLightbox(direction) {
+            currentImageIndex += direction;
+            if (currentImageIndex < 0) currentImageIndex = galleryImages.length - 1;
+            if (currentImageIndex >= galleryImages.length) currentImageIndex = 0;
+            document.getElementById('lightboxImg').src = galleryImages[currentImageIndex];
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (!document.getElementById('lightbox').classList.contains('active')) return;
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowLeft') navigateLightbox(-1);
+            if (e.key === 'ArrowRight') navigateLightbox(1);
+        });
+    </script>
+</body>
+</html>

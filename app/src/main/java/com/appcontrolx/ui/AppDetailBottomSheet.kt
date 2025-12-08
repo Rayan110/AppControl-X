@@ -164,8 +164,21 @@ class AppDetailBottomSheet : BottomSheetDialogFragment() {
         }
     }
     
+    private var isOpsExpanded = false
+    
     private fun loadBatteryStatus() {
         val packageName = arguments?.getString(ARG_PACKAGE_NAME) ?: return
+        
+        // Setup expand button
+        binding.btnExpandOps.setOnClickListener {
+            isOpsExpanded = !isOpsExpanded
+            binding.expandedOpsContainer.visibility = if (isOpsExpanded) View.VISIBLE else View.GONE
+            binding.btnExpandOps.rotation = if (isOpsExpanded) 180f else 0f
+            
+            if (isOpsExpanded) {
+                loadExtendedOps(packageName)
+            }
+        }
         
         lifecycleScope.launch {
             // Load detailed background state via root commands
@@ -189,6 +202,45 @@ class AppDetailBottomSheet : BottomSheetDialogFragment() {
             
             updateBatteryStatusUI(runInBg, runAnyInBg)
         }
+    }
+    
+    private fun loadExtendedOps(packageName: String) {
+        lifecycleScope.launch {
+            val ops = withContext(Dispatchers.IO) {
+                val exec = executor ?: return@withContext mapOf<String, String>()
+                
+                val opsToCheck = listOf(
+                    "WAKE_LOCK",
+                    "START_FOREGROUND",
+                    "BOOT_COMPLETED",
+                    "SYSTEM_ALERT_WINDOW",
+                    "REQUEST_INSTALL_PACKAGES"
+                )
+                
+                opsToCheck.associateWith { op ->
+                    val result = exec.execute("appops get $packageName $op")
+                    parseAppOpsOutput(result.getOrNull() ?: "")
+                }
+            }
+            
+            // Update UI
+            updateOpTextView(binding.tvWakeLock, ops["WAKE_LOCK"] ?: "-")
+            updateOpTextView(binding.tvStartForeground, ops["START_FOREGROUND"] ?: "-")
+            updateOpTextView(binding.tvBootCompleted, ops["BOOT_COMPLETED"] ?: "-")
+            updateOpTextView(binding.tvSystemAlertWindow, ops["SYSTEM_ALERT_WINDOW"] ?: "-")
+            updateOpTextView(binding.tvRequestInstall, ops["REQUEST_INSTALL_PACKAGES"] ?: "-")
+        }
+    }
+    
+    private fun updateOpTextView(tv: android.widget.TextView, value: String) {
+        tv.text = value
+        tv.setTextColor(resources.getColor(
+            when (value) {
+                "ignore", "deny" -> R.color.status_negative
+                "allow" -> R.color.status_positive
+                else -> R.color.on_surface_secondary
+            }, null
+        ))
     }
     
     private fun parseAppOpsOutput(output: String): String {
