@@ -310,6 +310,8 @@ class SystemMonitor @Inject constructor(
                 type = NetworkType.NONE,
                 isConnected = false,
                 signalStrength = null,
+                signalPercent = null,
+                signalDbm = null,
                 ssid = null
             )
         }
