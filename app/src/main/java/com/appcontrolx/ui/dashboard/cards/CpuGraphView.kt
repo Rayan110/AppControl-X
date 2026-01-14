@@ -39,7 +39,7 @@ class CpuGraphView @JvmOverloads constructor(
     private val dataPoints = mutableListOf<Float>()
     
     // Animation support
-    private var animatedValue: Float = 0f
+    private var currentAnimatedValue: Float = 0f
     private var animator: ValueAnimator? = null
 
     // Paint objects
@@ -161,11 +161,12 @@ class CpuGraphView @JvmOverloads constructor(
             duration = ANIMATION_DURATION
             interpolator = DecelerateInterpolator()
             addUpdateListener { animation ->
-                animatedValue = animation.animatedValue as Float
+                val value = animation.animatedValue as Float
+                currentAnimatedValue = value
                 
                 // Update the last data point during animation
                 if (dataPoints.isNotEmpty()) {
-                    dataPoints[dataPoints.lastIndex] = animatedValue
+                    dataPoints[dataPoints.lastIndex] = value
                 }
                 invalidate()
             }
