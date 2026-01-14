@@ -13,7 +13,6 @@ import com.appcontrolx.domain.manager.ModeLossAction
 import com.appcontrolx.domain.manager.ModeStatus
 import com.appcontrolx.domain.manager.ModeWatcher
 import com.appcontrolx.ui.components.ModeLossDialog
-import com.appcontrolx.ui.history.ActionHistoryBottomSheet
 import com.appcontrolx.ui.setup.SetupActivity
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayoutMediator
@@ -25,7 +24,7 @@ import javax.inject.Inject
  * Main activity for the app after setup is complete.
  * 
  * Contains TabLayout with ViewPager2 for Dashboard and Apps tabs.
- * Overflow menu provides access to Settings, Action Logs, and About.
+ * Overflow menu provides access to Settings and About.
  * 
  * Requirement 1.1: Header with app icon, title, and overflow menu
  * Requirement 1.3: TabLayout with Dashboard and Apps tabs
@@ -103,16 +102,12 @@ class MainActivity : AppCompatActivity() {
     
     /**
      * Handle overflow menu item clicks.
-     * Requirements 2.3, 2.4, 2.5
+     * Requirements 2.3, 2.5: Settings and About navigation from overflow menu
      */
     private fun handleMenuItemClick(menuItem: MenuItem): Boolean {
         return when (menuItem.itemId) {
             R.id.action_settings -> {
                 navigateToSettings()
-                true
-            }
-            R.id.action_logs -> {
-                showActionHistoryBottomSheet()
                 true
             }
             R.id.action_about -> {
@@ -138,15 +133,6 @@ class MainActivity : AppCompatActivity() {
             .replace(android.R.id.content, com.appcontrolx.ui.settings.SettingsFragment())
             .addToBackStack("settings")
             .commit()
-    }
-    
-    /**
-     * Show Action History bottom sheet.
-     * Requirement 2.4
-     */
-    private fun showActionHistoryBottomSheet() {
-        ActionHistoryBottomSheet.newInstance()
-            .show(supportFragmentManager, ActionHistoryBottomSheet.TAG)
     }
     
     /**

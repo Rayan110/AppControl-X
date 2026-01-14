@@ -10,7 +10,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.appcontrolx.R
@@ -19,7 +18,6 @@ import com.appcontrolx.databinding.FragmentDashboardBinding
 import com.appcontrolx.ui.MainPagerAdapter
 import com.appcontrolx.ui.MainActivity
 import com.appcontrolx.ui.dashboard.cards.CpuGraphView
-import com.appcontrolx.ui.history.ActionHistoryBottomSheet
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -28,9 +26,13 @@ import kotlinx.coroutines.launch
  * 
  * Shows:
  * - CPU usage with real-time graph and per-core frequencies
- * - Grid of system info cards (Battery, RAM, Storage, Display)
- * - Apps count card
- * - Device info card at bottom
+ * - Grid of system info cards (Battery, Network, Apps, Display, RAM, Storage)
+ * 
+ * Card Layout Order (matching mockup):
+ * 1. CPU Card (full width with background graph)
+ * 2. Battery | Network (side by side)
+ * 3. Apps | Display (side by side)
+ * 4. RAM | Storage (side by side)
  * 
  * Requirements: 0.1, 0.2, 0.3, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6
  */
@@ -63,7 +65,6 @@ class DashboardFragment : Fragment() {
         setupCpuCard()
         setupClickListeners()
         observeUiState()
-        observeNavigationEvents()
     }
     
     /**
@@ -79,11 +80,6 @@ class DashboardFragment : Fragment() {
     }
 
     private fun setupClickListeners() {
-        // Settings button in header
-        binding.btnSettings.setOnClickListener {
-            viewModel.onSettingsClicked()
-        }
-        
         // Apps card click - navigate to Apps tab
         binding.cardApps.setOnClickListener {
             navigateToAppsTab()
@@ -112,55 +108,6 @@ class DashboardFragment : Fragment() {
             }
         }
     }
-    
-    /**
-     * Observe navigation events from ViewModel.
-     * Handles one-time navigation events for settings button clicks.
-     */
-    private fun observeNavigationEvents() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.navigationEvent.collect { event ->
-                    handleNavigationEvent(event)
-                }
-            }
-        }
-    }
-    
-    /**
-     * Handle navigation events from ViewModel.
-     */
-    private fun handleNavigationEvent(event: NavigationEvent) {
-        when (event) {
-            is NavigationEvent.NavigateToFeature -> {
-                navigateToFeature(event.destination)
-            }
-        }
-    }
-    
-    /**
-     * Navigate to the specified feature destination.
-     */
-    private fun navigateToFeature(destination: FeatureDestination) {
-        try {
-            val navController = findNavController()
-            when (destination) {
-                FeatureDestination.SETTINGS -> navController.navigate(R.id.settingsFragment)
-                FeatureDestination.ACTION_LOGS -> showActionHistoryBottomSheet()
-                else -> { /* Other destinations removed */ }
-            }
-        } catch (e: Exception) {
-            // Navigation not available or destination not found
-        }
-    }
-    
-    /**
-     * Show the action history bottom sheet.
-     */
-    private fun showActionHistoryBottomSheet() {
-        ActionHistoryBottomSheet.newInstance()
-            .show(childFragmentManager, ActionHistoryBottomSheet.TAG)
-    }
 
     private fun updateUi(state: DashboardUiState) {
         // Update mode indicator
@@ -170,6 +117,7 @@ class DashboardFragment : Fragment() {
         state.systemSnapshot?.let { snapshot ->
             updateCpuCard(snapshot.cpu)
             updateBatteryCard(snapshot.battery)
+            updateNetworkCard(snapshot.network)
             updateRamCard(snapshot.ram)
             updateStorageCard(snapshot.storage)
         }
@@ -179,9 +127,6 @@ class DashboardFragment : Fragment() {
         
         // Update app counts
         state.appCounts?.let { updateAppsCard(it) }
-        
-        // Update device info
-        state.deviceInfo?.let { updateDeviceInfoCard(it) }
     }
 
     private fun updateModeIndicator(mode: ExecutionMode) {
@@ -256,6 +201,37 @@ class DashboardFragment : Fragment() {
         binding.ivBatteryIcon.setColorFilter(requireContext().getColor(iconTint))
     }
 
+    private fun updateNetworkCard(network: NetworkInfo) {
+        // Update network type
+        val networkTypeText = when (network.type) {
+            NetworkType.WIFI -> "Wi-Fi"
+            NetworkType.MOBILE -> "Mobile"
+            NetworkType.ETHERNET -> "Ethernet"
+            NetworkType.NONE -> getString(R.string.dashboard_network_disconnected)
+        }
+        binding.tvNetworkType.text = networkTypeText
+        
+        // Update network details
+        if (network.isConnected) {
+            val details = buildString {
+                network.signalPercent?.let { append("$it%") }
+                network.signalDbm?.let { 
+                    if (isNotEmpty()) append(" ")
+                    append("${it}dBm")
+                }
+            }
+            binding.tvNetworkDetails.text = details.ifEmpty { network.ssid ?: "" }
+            binding.tvNetworkDetails.visibility = if (details.isNotEmpty() || network.ssid != null) View.VISIBLE else View.GONE
+            
+            // Update icon color based on connection
+            binding.ivNetworkIcon.setColorFilter(requireContext().getColor(R.color.status_positive))
+        } else {
+            binding.tvNetworkDetails.text = ""
+            binding.tvNetworkDetails.visibility = View.GONE
+            binding.ivNetworkIcon.setColorFilter(requireContext().getColor(R.color.on_surface_secondary))
+        }
+    }
+
     private fun updateRamCard(ram: RamInfo) {
         val percent = ram.usedPercent.toInt()
         
@@ -299,15 +275,6 @@ class DashboardFragment : Fragment() {
             counts.userApps,
             counts.systemApps
         )
-    }
-
-
-    private fun updateDeviceInfoCard(device: DeviceInfo) {
-        // Device name (compact format)
-        binding.tvDeviceName.text = "${device.brand} ${device.model}"
-        
-        // Android version (simplified)
-        binding.tvAndroidVersion.text = "Android ${device.androidVersion}"
     }
 
     // ==================== Utility Functions ====================
