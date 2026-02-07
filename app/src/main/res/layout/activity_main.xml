@@ -17,4 +17,40 @@
         android:indeterminateTint="@color/primary"
         android:visibility="gone" />
 
+    <LinearLayout
+        android:id="@+id/permission_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="24dp"
+        android:background="@color/background"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Storage Permission Required"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@color/on_background"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="This app is built on web technologies and requires full file access to load local resources and function correctly.\n\nWithout this permission, the app cannot access its core files due to Android's storage restrictions."
+            android:textSize="16sp"
+            android:textColor="@color/on_surface_variant"
+            android:textAlignment="center"
+            android:layout_marginBottom="32dp" />
+
+        <Button
+            android:id="@+id/btn_grant_permission"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Grant Permission" />
+
+    </LinearLayout>
+
 </FrameLayout>
