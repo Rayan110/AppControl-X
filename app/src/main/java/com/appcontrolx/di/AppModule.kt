@@ -1,7 +1,12 @@
 package com.appcontrolx.di
 
 import android.content.Context
-import com.appcontrolx.domain.monitor.SystemMonitor
+import com.appcontrolx.bridge.NativeBridge
+import com.appcontrolx.core.ShellManager
+import com.appcontrolx.domain.AppManager
+import com.appcontrolx.domain.AppScanner
+import com.appcontrolx.domain.SafetyValidator
+import com.appcontrolx.domain.SystemMonitor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -9,32 +14,63 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
-/**
- * Hilt module providing app-level dependencies.
- * 
- * This module provides core application dependencies that are shared
- * across the entire application lifecycle.
- */
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
-    
-    /**
-     * Provides the application context for dependencies that need it.
-     */
+
     @Provides
     @Singleton
-    fun provideApplicationContext(
-        @ApplicationContext context: Context
-    ): Context = context
-    
-    /**
-     * Provides the SystemMonitor for real-time device monitoring.
-     * Requirements: 0.1.1-0.1.9, 0.2.1-0.2.7
-     */
+    fun provideShellManager(@ApplicationContext context: Context): ShellManager {
+        return ShellManager(context)
+    }
+
     @Provides
     @Singleton
-    fun provideSystemMonitor(
-        @ApplicationContext context: Context
-    ): SystemMonitor = SystemMonitor(context)
+    fun provideSafetyValidator(): SafetyValidator {
+        return SafetyValidator()
+    }
+
+    @Provides
+    @Singleton
+    fun provideAppScanner(
+        @ApplicationContext context: Context,
+        shellManager: ShellManager
+    ): AppScanner {
+        return AppScanner(context, shellManager)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAppManager(
+        shellManager: ShellManager,
+        safetyValidator: SafetyValidator
+    ): AppManager {
+        return AppManager(shellManager, safetyValidator)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSystemMonitor(@ApplicationContext context: Context): SystemMonitor {
+        return SystemMonitor(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideNativeBridge(
+        @ApplicationContext context: Context,
+        appScanner: AppScanner,
+        appManager: AppManager,
+        systemMonitor: SystemMonitor,
+        shellManager: ShellManager,
+        safetyValidator: SafetyValidator
+    ): NativeBridge {
+        return NativeBridge(
+            context,
+            appScanner,
+            appManager,
+            systemMonitor,
+            shellManager,
+            safetyValidator
+        )
+    }
 }

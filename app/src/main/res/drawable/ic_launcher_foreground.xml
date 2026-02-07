@@ -4,10 +4,10 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    
+
     <!-- Gear outer ring with teeth -->
     <path
-        android:fillColor="#1E88E5"
+        android:fillColor="#8B5CF6"
         android:pathData="M54,24
             L58,24 L60,20 L64,20 L66,24 L70,26
             L74,24 L77,27 L75,31 L78,34
@@ -27,17 +27,17 @@
             L33,31 L31,27 L34,24 L38,26
             L42,24 L44,20 L48,20 L50,24
             Z"/>
-    
+
     <!-- Inner circle (cutout effect) -->
     <path
         android:fillColor="#FFFFFF"
         android:pathData="M54,34
             A20,20 0 1,1 54,74
             A20,20 0 1,1 54,34z"/>
-    
+
     <!-- Letter A -->
     <path
-        android:fillColor="#1E88E5"
+        android:fillColor="#8B5CF6"
         android:pathData="M54,38
             L66,70 L60,70 L57,62 L51,62 L48,70 L42,70 L54,38z
             M54,48 L52,58 L56,58 L54,48z"/>
