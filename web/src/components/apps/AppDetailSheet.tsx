@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import type { AppInfo, AppAction } from '@/api/types'
 import { bridge } from '@/api/bridge'
 import { useAppStore } from '@/store/appStore'
-import LazyAppIcon from '@/components/apps/LazyAppIcon'
 import {
   X,
   Snowflake,
@@ -11,11 +10,18 @@ import {
   Square,
   Trash2,
   Play,
-  Settings,
   Package,
   HardDrive,
   Info,
-  Shield
+  Shield,
+  ShieldAlert,
+  ShieldCheck,
+  Database,
+  ChevronDown,
+  ChevronUp,
+  FileText,
+  Key,
+  Cpu
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -30,6 +36,7 @@ export default function AppDetailSheet({ isOpen, onClose, app }: AppDetailSheetP
   const { executionMode } = useAppStore()
   const [loading, setLoading] = useState<string | null>(null)
   const [showAccessModal, setShowAccessModal] = useState(false)
+  const [showBackgroundOps, setShowBackgroundOps] = useState(false)
 
   if (!isOpen || !app) return null
 
@@ -49,11 +56,17 @@ export default function AppDetailSheet({ isOpen, onClose, app }: AppDetailSheetP
     }
     setLoading(action)
     try {
-      bridge.executeAction(app.packageName, action)
+      if (action === 'CLEAR_CACHE') {
+        bridge.clearCache(app.packageName)
+      } else if (action === 'CLEAR_DATA') {
+        bridge.clearData(app.packageName)
+      } else {
+        bridge.executeAction(app.packageName, action)
+      }
     } catch (error) {
       console.error(`Failed to ${action}:`, error)
     } finally {
-      setLoading(null)
+      setTimeout(() => setLoading(null), 500)
     }
   }
 
@@ -81,18 +94,24 @@ export default function AppDetailSheet({ isOpen, onClose, app }: AppDetailSheetP
 
   return (
     <>
-      <div className="modal-overlay" onClick={onClose}>
-        <div className="modal-content" onClick={e => e.stopPropagation()}>
+      <div className="modal-overlay" onClick={onClose} style={{ zIndex: 999 }}>
+        <div className="modal-content max-w-lg" onClick={e => e.stopPropagation()}>
           {/* Header */}
           <div className="flex items-start gap-4 mb-6">
             {/* App Icon */}
-            <LazyAppIcon
-              packageName={app.packageName}
-              iconBase64={app.iconBase64}
-              appName={app.appName}
-              size={64}
-              className="flex-shrink-0"
-            />
+            <div className="w-16 h-16 flex-shrink-0">
+              {app.iconBase64 ? (
+                <img
+                  src={`data:image/png;base64,${app.iconBase64}`}
+                  alt={app.appName}
+                  className="w-full h-full object-cover rounded-2xl"
+                />
+              ) : (
+                <div className="w-full h-full rounded-2xl bg-surface flex items-center justify-center">
+                  <Package size={32} className="text-text-muted" />
+                </div>
+              )}
+            </div>
 
             {/* App Info */}
             <div className="flex-1 min-w-0">
@@ -102,9 +121,13 @@ export default function AppDetailSheet({ isOpen, onClose, app }: AppDetailSheetP
                 <span className="text-xs px-2 py-0.5 rounded-full bg-surface text-text-secondary">
                   v{app.versionName}
                 </span>
-                {app.isSystemApp && (
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
-                    System
+                {app.isSystemApp ? (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-text-muted/10 text-text-muted">
+                    System App
+                  </span>
+                ) : (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-success/10 text-success">
+                    User App
                   </span>
                 )}
                 {app.isFrozen && (
@@ -118,7 +141,7 @@ export default function AppDetailSheet({ isOpen, onClose, app }: AppDetailSheetP
             {/* Close Button */}
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-lg bg-surface flex items-center justify-center"
+              className="w-8 h-8 rounded-lg bg-surface flex items-center justify-center hover:bg-surface-hover transition-colors"
             >
               <X size={16} className="text-text-muted" />
             </button>
@@ -128,36 +151,107 @@ export default function AppDetailSheet({ isOpen, onClose, app }: AppDetailSheetP
           <div className="grid grid-cols-2 gap-3 mb-6">
             <InfoItem
               icon={HardDrive}
-              label="Size"
+              label="App Size"
               value={formatSize(app.size)}
             />
-            <InfoItem
-              icon={Info}
-              label="UID"
-              value={app.uid.toString()}
-            />
-            <InfoItem
-              icon={Package}
-              label="Status"
-              value={app.isEnabled ? 'Enabled' : 'Disabled'}
-              valueClass={app.isEnabled ? 'text-success' : 'text-error'}
-            />
+            {app.installPath && (
+              <InfoItem
+                icon={FileText}
+                label="Install Path"
+                value={app.installPath}
+                valueClass="text-xs font-mono truncate"
+              />
+            )}
+            {app.targetSdk && (
+              <InfoItem
+                icon={Cpu}
+                label="Target SDK"
+                value={`API ${app.targetSdk}`}
+              />
+            )}
+            {app.minSdk && (
+              <InfoItem
+                icon={Cpu}
+                label="Min SDK"
+                value={`API ${app.minSdk}`}
+              />
+            )}
+            {app.permissions !== undefined && (
+              <InfoItem
+                icon={Key}
+                label="Permissions"
+                value={`${app.permissions} permissions`}
+              />
+            )}
           </div>
 
-          {/* Background Status */}
-          {app.isBackgroundRestricted && (
-            <div className="p-3 rounded-xl bg-warning/10 border border-warning/20 mb-6">
-              <p className="text-xs text-warning">Background activity is restricted for this app</p>
+          {/* Background State Section */}
+          {app.backgroundOps && (
+            <div className="mb-6">
+              <button
+                onClick={() => setShowBackgroundOps(!showBackgroundOps)}
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-surface hover:bg-surface-hover transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <ShieldAlert size={16} className="text-text-secondary" />
+                  <span className="text-sm font-medium text-text-primary">Background State</span>
+                </div>
+                {showBackgroundOps ? (
+                  <ChevronUp size={16} className="text-text-muted" />
+                ) : (
+                  <ChevronDown size={16} className="text-text-muted" />
+                )}
+              </button>
+
+              {showBackgroundOps && (
+                <div className="mt-2 p-4 rounded-xl bg-surface space-y-3 animate-slide-down">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-text-secondary">RUN_IN_BACKGROUND</span>
+                    <span className={cn(
+                      "text-sm font-medium",
+                      app.backgroundOps.runInBackground === 'allow' ? 'text-success' :
+                      app.backgroundOps.runInBackground === 'deny' ? 'text-error' :
+                      'text-warning'
+                    )}>
+                      {app.backgroundOps.runInBackground}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-text-secondary">RUN_ANY_IN_BACKGROUND</span>
+                    <span className={cn(
+                      "text-sm font-medium",
+                      app.backgroundOps.runAnyInBackground === 'allow' ? 'text-success' :
+                      app.backgroundOps.runAnyInBackground === 'deny' ? 'text-error' :
+                      'text-warning'
+                    )}>
+                      {app.backgroundOps.runAnyInBackground}
+                    </span>
+                  </div>
+                  <p className="text-xs text-text-muted italic">
+                    This value may reset itself, this is normal.
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
-          {/* Action Buttons */}
+          {/* Quick Actions */}
           <div className="space-y-3">
             <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider">
-              Actions
+              Quick Actions
             </h3>
 
-            <div className="grid grid-cols-2 gap-2">
+            {/* Primary Actions - 3 columns */}
+            <div className="grid grid-cols-3 gap-2">
+              {/* Force Stop */}
+              <ActionButton
+                icon={Square}
+                label="Force Stop"
+                loading={loading === 'FORCE_STOP'}
+                onClick={() => handleAction('FORCE_STOP')}
+                color="warning"
+              />
+
               {/* Freeze/Unfreeze */}
               {app.isFrozen ? (
                 <ActionButton
@@ -178,13 +272,63 @@ export default function AppDetailSheet({ isOpen, onClose, app }: AppDetailSheetP
                 />
               )}
 
-              {/* Force Stop */}
+              {/* Restrict/Allow Background */}
+              {app.isBackgroundRestricted ? (
+                <ActionButton
+                  icon={ShieldCheck}
+                  label="Allow Bg"
+                  loading={loading === 'ALLOW_BACKGROUND'}
+                  onClick={() => handleAction('ALLOW_BACKGROUND')}
+                  color="success"
+                />
+              ) : (
+                <ActionButton
+                  icon={ShieldAlert}
+                  label="Restrict Bg"
+                  loading={loading === 'RESTRICT_BACKGROUND'}
+                  onClick={() => handleAction('RESTRICT_BACKGROUND')}
+                  color="warning"
+                />
+              )}
+
+              {/* Clear Cache */}
               <ActionButton
-                icon={Square}
-                label="Force Stop"
-                loading={loading === 'FORCE_STOP'}
-                onClick={() => handleAction('FORCE_STOP')}
+                icon={Trash2}
+                label="Clear Cache"
+                loading={loading === 'CLEAR_CACHE'}
+                onClick={() => handleAction('CLEAR_CACHE')}
+                color="secondary"
+              />
+
+              {/* Clear Data */}
+              <ActionButton
+                icon={Database}
+                label="Clear Data"
+                loading={loading === 'CLEAR_DATA'}
+                onClick={() => handleAction('CLEAR_DATA')}
                 color="warning"
+              />
+
+              {/* Uninstall */}
+              {!app.isSystemApp && (
+                <ActionButton
+                  icon={Trash2}
+                  label="Uninstall"
+                  loading={loading === 'UNINSTALL'}
+                  onClick={() => handleAction('UNINSTALL')}
+                  color="error"
+                />
+              )}
+            </div>
+
+            {/* Secondary Actions - 2 columns */}
+            <div className="grid grid-cols-2 gap-2 pt-2">
+              {/* App Info */}
+              <ActionButton
+                icon={Info}
+                label="App Info"
+                loading={loading === 'SETTINGS'}
+                onClick={handleOpenSettings}
               />
 
               {/* Launch */}
@@ -196,26 +340,6 @@ export default function AppDetailSheet({ isOpen, onClose, app }: AppDetailSheetP
                 onClick={handleLaunch}
                 color="secondary"
               />
-
-              {/* Settings */}
-              <ActionButton
-                icon={Settings}
-                label="App Settings"
-                loading={loading === 'SETTINGS'}
-                onClick={handleOpenSettings}
-              />
-
-              {/* Uninstall */}
-              {!app.isSystemApp && (
-                <ActionButton
-                  icon={Trash2}
-                  label="Uninstall"
-                  loading={loading === 'UNINSTALL'}
-                  onClick={() => handleAction('UNINSTALL')}
-                  color="error"
-                  fullWidth
-                />
-              )}
             </div>
           </div>
         </div>
@@ -223,7 +347,7 @@ export default function AppDetailSheet({ isOpen, onClose, app }: AppDetailSheetP
 
       {/* Access Denied Modal */}
       {showAccessModal && (
-        <div className="modal-overlay" onClick={() => setShowAccessModal(false)} style={{ zIndex: 110 }}>
+        <div className="modal-overlay" onClick={() => setShowAccessModal(false)} style={{ zIndex: 1000 }}>
           <div className="modal-content max-w-sm p-6" onClick={e => e.stopPropagation()}>
             <div className="flex flex-col items-center text-center gap-4">
               <div className="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center">
@@ -270,7 +394,7 @@ interface InfoItemProps {
 
 function InfoItem({ icon: Icon, label, value, valueClass }: InfoItemProps) {
   return (
-    <div className="p-3 rounded-xl bg-surface">
+    <div className="p-3 rounded-xl bg-surface col-span-2">
       <div className="flex items-center gap-2 mb-1">
         <Icon size={12} className="text-text-muted" />
         <span className="text-xs text-text-muted">{label}</span>
@@ -288,8 +412,7 @@ interface ActionButtonProps {
   loading?: boolean
   disabled?: boolean
   onClick: () => void
-  color?: 'primary' | 'secondary' | 'success' | 'warning' | 'error'
-  fullWidth?: boolean
+  color?: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'default'
 }
 
 function ActionButton({
@@ -298,30 +421,34 @@ function ActionButton({
   loading,
   disabled,
   onClick,
-  color,
-  fullWidth
+  color = 'default'
 }: ActionButtonProps) {
-  const colorClass = color
-    ? `text-${color} bg-${color}/10 hover:bg-${color}/20`
-    : 'text-text-secondary bg-surface hover:bg-surface-hover'
+  const colorStyles = {
+    primary: 'bg-primary/10 text-primary hover:bg-primary/20',
+    secondary: 'bg-secondary/10 text-secondary hover:bg-secondary/20',
+    success: 'bg-success/10 text-success hover:bg-success/20',
+    warning: 'bg-warning/10 text-warning hover:bg-warning/20',
+    error: 'bg-error/10 text-error hover:bg-error/20',
+    default: 'bg-surface text-text-secondary hover:bg-surface-hover'
+  }
 
   return (
     <button
       onClick={onClick}
       disabled={disabled || loading}
       className={cn(
-        'flex items-center justify-center gap-2 p-3 rounded-xl transition-colors',
-        colorClass,
+        'flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl transition-all duration-200',
+        colorStyles[color],
         disabled && 'opacity-50 cursor-not-allowed',
-        fullWidth && 'col-span-2'
+        'active:scale-[0.95]'
       )}
     >
       {loading ? (
-        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
       ) : (
-        <Icon size={16} />
+        <Icon size={18} strokeWidth={1.5} />
       )}
-      <span className="text-sm font-medium">{label}</span>
+      <span className="text-xs font-medium">{label}</span>
     </button>
   )
 }

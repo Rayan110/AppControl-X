@@ -21,10 +21,13 @@ interface NativeBridgeInterface {
   getSafetyStatus(packageName: string): string
   // Tools & Activity Launcher
   openHiddenSetting(intents: string): boolean
-  getActivities(): string
+  getActivities(filterJson: string): string
   launchActivity(packageName: string, activityName: string): boolean
   launchApp(packageName: string): boolean
   openAppSettings(packageName: string): boolean
+  // Cache management
+  clearCache(packageName: string): string
+  clearData(packageName: string): string
 }
 
 declare global {

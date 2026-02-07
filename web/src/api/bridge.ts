@@ -7,7 +7,9 @@ import type {
   RealtimeStatus,
   ActionLog,
   AppFilter,
-  DeviceInfo
+  DeviceInfo,
+  AppActivityFilter,
+  AppActivities
 } from './types'
 
 // Check if running in development mode (browser)
@@ -243,9 +245,10 @@ export const bridge = {
   },
 
   // Get all activities from installed apps
-  getActivities: (): { packageName: string; appName: string; isSystem: boolean; activities: string[] }[] => {
+  getActivities: (filter?: AppActivityFilter): AppActivities[] => {
     if (!isNativeBridgeAvailable()) return []
-    return callNative(() => window.NativeBridge.getActivities())
+    const filterJson = filter ? JSON.stringify(filter) : '{}'
+    return callNative(() => window.NativeBridge.getActivities(filterJson))
   },
 
   // Launch a specific activity
@@ -276,5 +279,35 @@ export const bridge = {
     } catch {
       return false
     }
+  },
+
+  // Clear app cache
+  clearCache: (packageName: string): ActionResult => {
+    if (!isNativeBridgeAvailable()) {
+      return {
+        success: false,
+        message: 'Native bridge not available',
+        packageName,
+        action: 'CLEAR_CACHE'
+      }
+    }
+    return callNative<ActionResult>(() =>
+      window.NativeBridge.clearCache(packageName)
+    )
+  },
+
+  // Clear app data
+  clearData: (packageName: string): ActionResult => {
+    if (!isNativeBridgeAvailable()) {
+      return {
+        success: false,
+        message: 'Native bridge not available',
+        packageName,
+        action: 'CLEAR_DATA'
+      }
+    }
+    return callNative<ActionResult>(() =>
+      window.NativeBridge.clearData(packageName)
+    )
   }
 }

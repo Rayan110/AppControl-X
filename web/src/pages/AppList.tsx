@@ -3,7 +3,6 @@ import { useAppStore } from '@/store/appStore'
 import { useDebounce } from '@/hooks/useDebounce'
 import PageContainer from '@/components/layout/PageContainer'
 import AppDetailSheet from '@/components/apps/AppDetailSheet'
-import LazyAppIcon from '@/components/apps/LazyAppIcon'
 import { SkeletonAppItem } from '@/components/ui/Skeleton'
 import {
   Search,
@@ -385,13 +384,19 @@ function AppItem({ app, isSelected, isSelectionMode, onSelect, onClick, index }:
       )}
 
       {/* App Icon */}
-      <LazyAppIcon
-        packageName={app.packageName}
-        iconBase64={app.iconBase64}
-        appName={app.appName}
-        size={48}
-        className="flex-shrink-0"
-      />
+      <div className="w-12 h-12 flex-shrink-0">
+        {app.iconBase64 ? (
+          <img
+            src={`data:image/png;base64,${app.iconBase64}`}
+            alt={app.appName}
+            className="w-full h-full object-cover rounded-xl"
+          />
+        ) : (
+          <div className="w-full h-full rounded-xl bg-surface flex items-center justify-center">
+            <Package size={24} className="text-text-muted" />
+          </div>
+        )}
+      </div>
 
       {/* App Info */}
       <div className="flex-1 min-w-0">

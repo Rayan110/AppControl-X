@@ -45,7 +45,15 @@ data class AppActivities(
     val appName: String,
     val iconBase64: String?,
     val isSystem: Boolean,
-    val activities: List<String>
+    val activities: List<ActivityInfo>
+)
+
+@Serializable
+data class ActivityInfo(
+    val activityName: String,
+    val isExported: Boolean,
+    val canLaunchWithoutRoot: Boolean, // true if exported
+    val hasLauncherIntent: Boolean // true if has label resource
 )
 
 @Serializable
@@ -61,7 +69,11 @@ data class AppInfo(
     val isBackgroundRestricted: Boolean,
     val size: Long,
     val uid: Int,
-    val safetyLevel: SafetyLevel
+    val safetyLevel: SafetyLevel,
+    val installPath: String? = null,
+    val targetSdk: Int? = null,
+    val minSdk: Int? = null,
+    val permissions: Int? = null
 )
 
 @Serializable
@@ -86,4 +98,10 @@ data class BatchComplete(
     val total: Int,
     val successCount: Int,
     val failureCount: Int
+)
+
+@Serializable
+data class AppActivityFilter(
+    val type: String = "all", // "all"|"user"|"system"
+    val search: String = ""
 )

@@ -15,6 +15,7 @@ import com.appcontrolx.domain.AppScanner
 import com.appcontrolx.domain.SafetyValidator
 import com.appcontrolx.domain.SystemMonitor
 import com.appcontrolx.model.AppAction
+import com.appcontrolx.model.AppActivityFilter
 import com.appcontrolx.model.BatchComplete
 import com.appcontrolx.model.BatchProgress
 import com.appcontrolx.model.RealtimeStatus
@@ -75,9 +76,11 @@ class NativeBridge @Inject constructor(
     }
 
     @JavascriptInterface
-    fun getAppList(@Suppress("UNUSED_PARAMETER") filterJson: String): String {
+    fun getAppList(filterJson: String): String {
         return runBlocking {
-            val apps = appScanner.scanAllApps(includeIcons = false) // Fast load without icons
+            // TODO: Implement AppFilter parsing and filtering in AppScanner
+            // For now, just return all apps
+            val apps = appScanner.scanAllApps(includeIcons = false)
             json.encodeToString(apps)
         }
     }
@@ -259,15 +262,38 @@ class NativeBridge @Inject constructor(
     }
 
     @JavascriptInterface
-    fun getActivities(): String {
+    fun getActivities(filterJson: String): String {
         return runBlocking {
-            val activities = appScanner.scanAppActivities()
+            val filter = try {
+                json.decodeFromString<AppActivityFilter>(filterJson)
+            } catch (e: Exception) {
+                AppActivityFilter()
+            }
+
+            val activities = appScanner.scanAppActivities(filter)
             json.encodeToString(activities)
         }
     }
 
     @JavascriptInterface
     fun launchActivity(packageName: String, activityName: String): Boolean {
+        val mode = shellManager.getMode()
+
+        return try {
+            if (mode == com.appcontrolx.model.ExecutionMode.NONE) {
+                // Standard Intent launch (only works if exported)
+                launchViaIntent(packageName, activityName)
+            } else {
+                // Shell launch (can launch non-exported activities)
+                val result = shellManager.execute("am start -n $packageName/$activityName")
+                result.isSuccess
+            }
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    private fun launchViaIntent(packageName: String, activityName: String): Boolean {
         return try {
             val intent = Intent().apply {
                 component = ComponentName(packageName, activityName)
@@ -307,6 +333,28 @@ class NativeBridge @Inject constructor(
             true
         } catch (e: Exception) {
             false
+        }
+    }
+
+    @JavascriptInterface
+    fun clearCache(packageName: String): String {
+        return runBlocking {
+            val result = appManager.executeAction(packageName, AppAction.CLEAR_CACHE)
+            if (result.success) {
+                appScanner.invalidateCache()
+            }
+            json.encodeToString(result)
+        }
+    }
+
+    @JavascriptInterface
+    fun clearData(packageName: String): String {
+        return runBlocking {
+            val result = appManager.executeAction(packageName, AppAction.CLEAR_DATA)
+            if (result.success) {
+                appScanner.invalidateCache()
+            }
+            json.encodeToString(result)
         }
     }
 

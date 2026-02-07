@@ -11,6 +11,7 @@ import android.os.Build
 import android.util.Base64
 import com.appcontrolx.core.ShellManager
 import com.appcontrolx.model.AppActivities
+import com.appcontrolx.model.AppActivityFilter
 import com.appcontrolx.model.AppInfo
 import com.appcontrolx.model.ExecutionMode
 import kotlinx.coroutines.Dispatchers
@@ -61,7 +62,11 @@ class AppScanner @Inject constructor(
                     isBackgroundRestricted = false,
                     size = getAppSize(appInfo),
                     uid = appInfo.uid,
-                    safetyLevel = safetyValidator.getSafetyLevel(pkg.packageName)
+                    safetyLevel = safetyValidator.getSafetyLevel(pkg.packageName),
+                    installPath = appInfo.sourceDir,
+                    targetSdk = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) appInfo.targetSdkVersion else null,
+                    minSdk = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) appInfo.minSdkVersion else null,
+                    permissions = pkg.requestedPermissions?.size
                 )
             } catch (e: Exception) {
                 null
@@ -82,27 +87,76 @@ class AppScanner @Inject constructor(
         }
     }
 
-    suspend fun scanAppActivities(): List<AppActivities> = withContext(Dispatchers.IO) {
+    suspend fun scanAppActivities(filter: AppActivityFilter = AppActivityFilter()): List<AppActivities> = withContext(Dispatchers.IO) {
         val packages = packageManager.getInstalledPackages(PackageManager.GET_ACTIVITIES)
         packages.mapNotNull { pkg ->
             try {
-                val activities = pkg.activities?.map { it.name } ?: return@mapNotNull null
-                if (activities.isEmpty()) return@mapNotNull null
-
+                // Filter by app type first
                 val appInfo = pkg.applicationInfo
                 val isSystemApp = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
+
+                when (filter.type) {
+                    "user" -> if (isSystemApp) return@mapNotNull null
+                    "system" -> if (!isSystemApp) return@mapNotNull null
+                    else -> {} // "all" - include everything
+                }
+
+                // Filter by search query (app name or package name)
+                if (filter.search.isNotEmpty()) {
+                    val appName = appInfo.loadLabel(packageManager).toString()
+                    val searchLower = filter.search.lowercase()
+                    val matchesApp = appName.lowercase().contains(searchLower) ||
+                                    pkg.packageName.lowercase().contains(searchLower)
+
+                    if (!matchesApp) {
+                        // Check if any activity matches
+                        val matchesActivity = pkg.activities?.any { activityInfo ->
+                            activityInfo.name.lowercase().contains(searchLower)
+                        } ?: false
+
+                        if (!matchesActivity) return@mapNotNull null
+                    }
+                }
+
+                val activities = pkg.activities?.mapNotNull { activityInfo ->
+                    try {
+                        // Filter hidden/test activities
+                        if (isHiddenActivity(activityInfo.name)) return@mapNotNull null
+
+                        com.appcontrolx.model.ActivityInfo(
+                            activityName = activityInfo.name,
+                            isExported = activityInfo.exported,
+                            canLaunchWithoutRoot = activityInfo.exported,
+                            hasLauncherIntent = activityInfo.labelRes != 0
+                        )
+                    } catch (e: Exception) {
+                        null
+                    }
+                } ?: return@mapNotNull null
+
+                if (activities.isEmpty()) return@mapNotNull null
 
                 AppActivities(
                     packageName = pkg.packageName,
                     appName = appInfo.loadLabel(packageManager).toString(),
                     iconBase64 = getIconBase64(appInfo),
                     isSystem = isSystemApp,
-                    activities = activities.sorted()
+                    activities = activities.sortedBy { it.activityName }
                 )
             } catch (e: Exception) {
                 null
             }
         }.sortedBy { it.appName.lowercase() }
+    }
+
+    private fun isHiddenActivity(name: String): Boolean {
+        val lowerName = name.lowercase()
+        return lowerName.contains("test") ||
+               lowerName.contains("debug") ||
+               lowerName.contains("internal") ||
+               lowerName.endsWith("receiver") ||
+               lowerName.endsWith("service") ||
+               lowerName.endsWith("provider")
     }
 
     fun invalidateCache() {

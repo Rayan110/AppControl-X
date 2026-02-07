@@ -24,6 +24,14 @@ export interface AppInfo {
   size: number
   uid: number
   safetyLevel: SafetyLevel
+  installPath?: string
+  targetSdk?: number
+  minSdk?: number
+  permissions?: number
+  backgroundOps?: {
+    runInBackground: string
+    runAnyInBackground: string
+  }
 }
 
 export interface SystemStats {
@@ -149,4 +157,24 @@ export interface AppFilter {
   showEnabledOnly: boolean
   showDisabledOnly: boolean
   searchQuery: string
+}
+
+export interface AppActivityFilter {
+  type: 'all' | 'user' | 'system'
+  search: string
+}
+
+export interface ActivityInfo {
+  activityName: string
+  isExported: boolean
+  canLaunchWithoutRoot: boolean
+  hasLauncherIntent: boolean
+}
+
+export interface AppActivities {
+  packageName: string
+  appName: string
+  iconBase64?: string
+  isSystem: boolean
+  activities: ActivityInfo[]
 }
