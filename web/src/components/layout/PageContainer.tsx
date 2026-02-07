@@ -17,15 +17,15 @@ export default function PageContainer({
   headerRight
 }: PageContainerProps) {
   return (
-    <div className={cn('px-4 py-6 safe-top animate-fade-in', className)}>
+    <div className={cn('px-4 pt-6 pb-4 safe-top animate-fade-in', className)}>
       {(title || headerRight) && (
-        <div className="flex items-start justify-between mb-6">
+        <div className="flex items-center justify-between mb-5 min-h-[40px]">
           <div>
             {title && (
               <h1 className="text-2xl font-bold text-text-primary">{title}</h1>
             )}
             {subtitle && (
-              <p className="text-sm text-text-secondary mt-1">{subtitle}</p>
+              <p className="text-sm text-text-secondary mt-0.5">{subtitle}</p>
             )}
           </div>
           {headerRight}

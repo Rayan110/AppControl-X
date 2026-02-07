@@ -59,7 +59,7 @@ export default function Dashboard() {
   const gpuTemp = systemStats?.gpu?.temperature ?? null
 
   return (
-    <PageContainer>
+    <PageContainer title="Dashboard" subtitle="System overview">
       <div className="space-y-4">
         {/* CPU Status Card */}
         <div className="dash-card animate-fade-in-up" onClick={() => {}}>

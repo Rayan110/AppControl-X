@@ -52,16 +52,10 @@ export default function AppList() {
   }, [apps, filter, searchQuery])
 
   return (
-    <PageContainer>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-5">
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary">Apps</h1>
-          <p className="text-sm text-text-secondary mt-1">
-            {filteredApps.length} of {apps.length} apps
-          </p>
-        </div>
-
+    <PageContainer
+      title="Apps"
+      subtitle={`${filteredApps.length} of ${apps.length} apps`}
+      headerRight={
         <div className="flex items-center gap-2">
           {isSelectionMode ? (
             <button onClick={clearSelection} className="btn-icon">
@@ -73,8 +67,8 @@ export default function AppList() {
             </button>
           )}
         </div>
-      </div>
-
+      }
+    >
       {/* Search & Filter */}
       <div className="flex gap-3 mb-4">
         <div className="flex-1 relative">

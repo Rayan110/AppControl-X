@@ -8,9 +8,9 @@ export default function About() {
   const { theme } = useThemeStore()
 
   return (
-    <PageContainer>
+    <PageContainer title="About" subtitle="App information">
       {/* Hero Section */}
-      <div className="flex flex-col items-center py-8 animate-fade-in-up">
+      <div className="flex flex-col items-center py-6 animate-fade-in-up">
         {/* App Icon - Gear with A */}
         <div className="relative">
           <div className={cn(

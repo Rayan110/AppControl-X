@@ -64,7 +64,7 @@ export default function Settings() {
   }[executionMode]
 
   return (
-    <PageContainer>
+    <PageContainer title="Settings" subtitle="App configuration">
       {/* Access Lost Warning */}
       {accessLost && (
         <div className="card p-4 mb-6 border-error/50 animate-fade-in-up">
