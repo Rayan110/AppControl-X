@@ -11,20 +11,37 @@ export default function About() {
     <PageContainer>
       {/* Hero Section */}
       <div className="flex flex-col items-center py-8 animate-fade-in-up">
-        {/* App Icon */}
+        {/* App Icon - Gear with A */}
         <div className="relative">
           <div className={cn(
-            'w-28 h-28 rounded-[2rem] flex items-center justify-center',
+            'w-28 h-28 rounded-[2rem] flex items-center justify-center overflow-hidden',
             theme === 'dark'
-              ? 'bg-gradient-to-br from-accent-purple via-accent-purple to-secondary'
-              : 'bg-gradient-to-br from-primary via-primary to-secondary'
+              ? 'bg-gradient-to-br from-[#1a1a2e] to-[#16213e]'
+              : 'bg-gradient-to-br from-[#e3f2fd] to-[#bbdefb]'
           )}>
-            <div className="w-20 h-20 rounded-2xl bg-white/20 flex items-center justify-center">
-              <span className="text-5xl font-black text-white drop-shadow-lg">A</span>
-            </div>
+            <svg
+              viewBox="0 0 108 108"
+              className="w-24 h-24"
+            >
+              {/* Gear outer ring with teeth */}
+              <path
+                fill="#1E88E5"
+                d="M54,24 L58,24 L60,20 L64,20 L66,24 L70,26 L74,24 L77,27 L75,31 L78,34 L82,34 L84,38 L84,42 L80,44 L82,48 L82,52 L84,54 L84,58 L82,60 L80,64 L84,66 L84,70 L82,74 L78,74 L75,77 L77,81 L74,84 L70,82 L66,84 L64,88 L60,88 L58,84 L54,84 L50,84 L48,88 L44,88 L42,84 L38,82 L34,84 L31,81 L33,77 L30,74 L26,74 L24,70 L24,66 L28,64 L26,60 L26,56 L24,54 L24,50 L26,48 L28,44 L24,42 L24,38 L26,34 L30,34 L33,31 L31,27 L34,24 L38,26 L42,24 L44,20 L48,20 L50,24 Z"
+              />
+              {/* Inner circle (cutout effect) */}
+              <path
+                fill="white"
+                d="M54,34 A20,20 0 1,1 54,74 A20,20 0 1,1 54,34z"
+              />
+              {/* Letter A */}
+              <path
+                fill="#1E88E5"
+                d="M54,38 L66,70 L60,70 L57,62 L51,62 L48,70 L42,70 L54,38z M54,48 L52,58 L56,58 L54,48z"
+              />
+            </svg>
           </div>
           {/* Decorative ring */}
-          <div className="absolute -inset-2 rounded-[2.5rem] border border-primary/30 animate-pulse" />
+          <div className="absolute -inset-2 rounded-[2.5rem] border border-[#1E88E5]/30 animate-pulse" />
         </div>
 
         <h1 className="text-2xl font-bold text-text-primary mt-6">{APP_NAME}</h1>
