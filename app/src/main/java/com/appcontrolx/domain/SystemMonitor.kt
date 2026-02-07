@@ -40,70 +40,99 @@ class SystemMonitor @Inject constructor(
     private var accumulatedSleepTime: Long = 0
 
     fun getSystemStats(): SystemStats {
-        return SystemStats(
-            cpu = getCpuStats(),
-            gpu = getGpuStats(),
-            ram = getRamStats(),
-            storage = getStorageStats(),
-            battery = getBatteryStats(),
-            network = getNetworkStats(),
-            display = getDisplayStats()
-        )
+        return try {
+            SystemStats(
+                cpu = getCpuStats(),
+                gpu = getGpuStats(),
+                ram = getRamStats(),
+                storage = getStorageStats(),
+                battery = getBatteryStats(),
+                network = getNetworkStats(),
+                display = getDisplayStats()
+            )
+        } catch (e: Exception) {
+            // Ultimate fallback to prevent crash
+            SystemStats(
+                cpu = CpuStats(0f, 0f, 0, emptyList()),
+                gpu = GpuStats("Unknown", 0f),
+                ram = RamStats(0, 0, 0, 0f, 0, 0),
+                storage = StorageStats(0, 0, 0, 0f, 0, 0, "Unknown"),
+                battery = BatteryStats(0, 0f, false, "Unknown", "Unknown", 0, 0, "Unknown"),
+                network = NetworkStats(WifiStats(false, "", "", 0, 0, 0), MobileStats(false, ""), SimStats(false)),
+                display = DisplayStats("Unknown", "Unknown", 0, "Unknown", 0)
+            )
+        }
     }
 
     fun getDeviceInfo(): DeviceInfo {
-        val uptimeMs = SystemClock.elapsedRealtime()
-        val awakeTimeMs = SystemClock.uptimeMillis()
-        val deepSleepMs = uptimeMs - awakeTimeMs
+        try {
+            val uptimeMs = SystemClock.elapsedRealtime()
+            val awakeTimeMs = SystemClock.uptimeMillis()
+            val deepSleepMs = uptimeMs - awakeTimeMs
 
-        // Track accumulated sleep time for more accurate percentage
-        val currentAwake = SystemClock.uptimeMillis()
-        val awakeDiff = currentAwake - lastAwakeTime
-        lastAwakeTime = currentAwake
-        accumulatedSleepTime += (uptimeMs - awakeDiff - accumulatedSleepTime).coerceAtLeast(0)
+            // Track accumulated sleep time for more accurate percentage
+            val currentAwake = SystemClock.uptimeMillis()
+            val awakeDiff = currentAwake - lastAwakeTime
+            lastAwakeTime = currentAwake
+            accumulatedSleepTime += (uptimeMs - awakeDiff - accumulatedSleepTime).coerceAtLeast(0)
 
-        val deepSleepPercent = if (uptimeMs > 0) {
-            ((deepSleepMs.toFloat() / uptimeMs.toFloat()) * 100).toInt()
-        } else 0
+            val deepSleepPercent = if (uptimeMs > 0) {
+                ((deepSleepMs.toFloat() / uptimeMs.toFloat()) * 100).toInt()
+            } else 0
 
-        return DeviceInfo(
-            model = getDeviceModelName(),
-            brand = Build.BRAND.uppercase(),
-            processor = getProcessorName(),
-            androidVersion = getAndroidVersionString(),
-            uptime = formatDuration(uptimeMs),
-            deepSleep = formatDuration(deepSleepMs),
-            deepSleepPercent = deepSleepPercent
-        )
+            return DeviceInfo(
+                model = getDeviceModelName(),
+                brand = Build.BRAND.uppercase(),
+                processor = getProcessorName(),
+                androidVersion = getAndroidVersionString(),
+                uptime = formatDuration(uptimeMs),
+                deepSleep = formatDuration(deepSleepMs),
+                deepSleepPercent = deepSleepPercent
+            )
+        } catch (e: Exception) {
+            return DeviceInfo("Unknown", "Unknown", "Unknown", "Unknown", "0s", "0s", 0)
+        }
     }
 
     fun getCoreFrequencies(): List<Long> {
-        val cores = Runtime.getRuntime().availableProcessors()
-        return getCoreFrequenciesInternal(cores)
+        return try {
+            val cores = Runtime.getRuntime().availableProcessors()
+            getCoreFrequenciesInternal(cores)
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
 
     private fun getCpuStats(): CpuStats {
-        val usage = calculateCpuUsage()
-        val temperature = getCpuTemperature()
-        val cores = Runtime.getRuntime().availableProcessors()
-        val frequencies = getCoreFrequenciesInternal(cores)
+        return try {
+            val usage = calculateCpuUsage()
+            val temperature = getCpuTemperature()
+            val cores = Runtime.getRuntime().availableProcessors()
+            val frequencies = getCoreFrequenciesInternal(cores)
 
-        return CpuStats(
-            usagePercent = usage,
-            temperature = temperature,
-            cores = cores,
-            coreFrequencies = frequencies
-        )
+            CpuStats(
+                usagePercent = usage,
+                temperature = temperature,
+                cores = cores,
+                coreFrequencies = frequencies
+            )
+        } catch (e: Exception) {
+            CpuStats(0f, 0f, 0, emptyList())
+        }
     }
 
     private fun getGpuStats(): GpuStats {
-        val gpuName = getGpuName()
-        val gpuTemp = getGpuTemperature()
+        return try {
+            val gpuName = getGpuName()
+            val gpuTemp = getGpuTemperature()
 
-        return GpuStats(
-            name = gpuName,
-            temperature = gpuTemp
-        )
+            GpuStats(
+                name = gpuName,
+                temperature = gpuTemp
+            )
+        } catch (e: Exception) {
+            GpuStats("Unknown", 0f)
+        }
     }
 
     private fun calculateCpuUsage(): Float {
@@ -145,8 +174,11 @@ class SystemMonitor @Inject constructor(
 
         for (path in thermalPaths) {
             try {
-                val temp = File(path).readText().trim().toLong()
-                return if (temp > 1000) temp / 1000f else temp.toFloat()
+                val file = File(path)
+                if (file.canRead()) {
+                    val temp = file.readText().trim().toLong()
+                    return if (temp > 1000) temp / 1000f else temp.toFloat()
+                }
             } catch (_: Exception) {}
         }
         return null
@@ -163,12 +195,15 @@ class SystemMonitor @Inject constructor(
 
         // Try to read from /proc/cpuinfo
         try {
-            val cpuInfo = File("/proc/cpuinfo").readText()
-            val hardwareLine = cpuInfo.lines().find { it.trim().startsWith("Hardware") }
-            val hardware = hardwareLine?.substringAfter(":")?.trim() ?: ""
+            val file = File("/proc/cpuinfo")
+            if (file.canRead()) {
+                val cpuInfo = file.readText()
+                val hardwareLine = cpuInfo.lines().find { it.trim().startsWith("Hardware") }
+                val hardware = hardwareLine?.substringAfter(":")?.trim() ?: ""
 
-            if (hardware.contains("Qualcomm") || hardware.contains("SDM") || hardware.contains("SM")) {
-                return getGpuFromSoc(hardware)
+                if (hardware.contains("Qualcomm") || hardware.contains("SDM") || hardware.contains("SM")) {
+                    return getGpuFromSoc(hardware)
+                }
             }
         } catch (_: Exception) {}
 
@@ -212,8 +247,11 @@ class SystemMonitor @Inject constructor(
 
         for (path in gpuThermalPaths) {
             try {
-                val temp = File(path).readText().trim().toLong()
-                return if (temp > 1000) temp / 1000f else temp.toFloat()
+                val file = File(path)
+                if (file.canRead()) {
+                    val temp = file.readText().trim().toLong()
+                    return if (temp > 1000) temp / 1000f else temp.toFloat()
+                }
             } catch (_: Exception) {}
         }
         return null
@@ -223,9 +261,13 @@ class SystemMonitor @Inject constructor(
         val frequencies = mutableListOf<Long>()
         for (i in 0 until cores) {
             try {
-                val freq = File("/sys/devices/system/cpu/cpu$i/cpufreq/scaling_cur_freq")
-                    .readText().trim().toLong() / 1000
-                frequencies.add(freq)
+                val file = File("/sys/devices/system/cpu/cpu$i/cpufreq/scaling_cur_freq")
+                if (file.canRead()) {
+                    val freq = file.readText().trim().toLong() / 1000
+                    frequencies.add(freq)
+                } else {
+                    frequencies.add(0L)
+                }
             } catch (_: Exception) {
                 frequencies.add(0L)
             }
@@ -234,25 +276,29 @@ class SystemMonitor @Inject constructor(
     }
 
     private fun getRamStats(): RamStats {
-        val memInfo = ActivityManager.MemoryInfo()
-        activityManager.getMemoryInfo(memInfo)
+        return try {
+            val memInfo = ActivityManager.MemoryInfo()
+            activityManager.getMemoryInfo(memInfo)
 
-        val totalBytes = memInfo.totalMem
-        val availableBytes = memInfo.availMem
-        val usedBytes = totalBytes - availableBytes
-        val usedPercent = (usedBytes.toFloat() / totalBytes.toFloat()) * 100f
+            val totalBytes = memInfo.totalMem
+            val availableBytes = memInfo.availMem
+            val usedBytes = totalBytes - availableBytes
+            val usedPercent = if (totalBytes > 0) (usedBytes.toFloat() / totalBytes.toFloat()) * 100f else 0f
 
-        // Get ZRAM info
-        val (zramTotal, zramUsed) = getZramInfo()
+            // Get ZRAM info
+            val (zramTotal, zramUsed) = getZramInfo()
 
-        return RamStats(
-            totalBytes = totalBytes,
-            usedBytes = usedBytes,
-            availableBytes = availableBytes,
-            usedPercent = usedPercent,
-            zramTotal = zramTotal,
-            zramUsed = zramUsed
-        )
+            RamStats(
+                totalBytes = totalBytes,
+                usedBytes = usedBytes,
+                availableBytes = availableBytes,
+                usedPercent = usedPercent,
+                zramTotal = zramTotal,
+                zramUsed = zramUsed
+            )
+        } catch (e: Exception) {
+            RamStats(0, 0, 0, 0f, 0, 0)
+        }
     }
 
     private fun getZramInfo(): Pair<Long, Long> {
@@ -260,7 +306,7 @@ class SystemMonitor @Inject constructor(
             val zramSizeFile = File("/sys/block/zram0/disksize")
             val zramUsedFile = File("/sys/block/zram0/mem_used_total")
 
-            if (zramSizeFile.exists() && zramUsedFile.exists()) {
+            if (zramSizeFile.exists() && zramUsedFile.exists() && zramSizeFile.canRead() && zramUsedFile.canRead()) {
                 val total = zramSizeFile.readText().trim().toLongOrNull() ?: 0L
                 val used = zramUsedFile.readText().trim().toLongOrNull() ?: 0L
                 return Pair(total, used)
@@ -270,26 +316,30 @@ class SystemMonitor @Inject constructor(
     }
 
     private fun getStorageStats(): StorageStats {
-        val stat = StatFs(Environment.getDataDirectory().path)
-        val totalBytes = stat.totalBytes
-        val availableBytes = stat.availableBytes
-        val usedBytes = totalBytes - availableBytes
-        val usedPercent = (usedBytes.toFloat() / totalBytes.toFloat()) * 100f
+        return try {
+            val stat = StatFs(Environment.getDataDirectory().path)
+            val totalBytes = stat.totalBytes
+            val availableBytes = stat.availableBytes
+            val usedBytes = totalBytes - availableBytes
+            val usedPercent = if (totalBytes > 0) (usedBytes.toFloat() / totalBytes.toFloat()) * 100f else 0f
 
-        // Get apps and system storage size
-        val appsBytes = getAppsStorageSize()
-        val systemBytes = getSystemStorageSize()
-        val filesystem = getFilesystem()
+            // Get apps and system storage size
+            val appsBytes = getAppsStorageSize()
+            val systemBytes = getSystemStorageSize()
+            val filesystem = getFilesystem()
 
-        return StorageStats(
-            totalBytes = totalBytes,
-            usedBytes = usedBytes,
-            availableBytes = availableBytes,
-            usedPercent = usedPercent,
-            appsBytes = appsBytes,
-            systemBytes = systemBytes,
-            filesystem = filesystem
-        )
+            StorageStats(
+                totalBytes = totalBytes,
+                usedBytes = usedBytes,
+                availableBytes = availableBytes,
+                usedPercent = usedPercent,
+                appsBytes = appsBytes,
+                systemBytes = systemBytes,
+                filesystem = filesystem
+            )
+        } catch (e: Exception) {
+            StorageStats(0, 0, 0, 0f, 0, 0, "Unknown")
+        }
     }
 
     private fun getAppsStorageSize(): Long {
@@ -328,212 +378,239 @@ class SystemMonitor @Inject constructor(
 
     private fun getFilesystem(): String {
         return try {
-            val mounts = File("/proc/mounts").readText()
-            val dataMount = mounts.lines().find { it.contains("/data") }
-            when {
-                dataMount?.contains("f2fs") == true -> "f2fs"
-                dataMount?.contains("ext4") == true -> "ext4"
-                dataMount?.contains("erofs") == true -> "erofs"
-                else -> "unknown"
-            }
+            val file = File("/proc/mounts")
+            if (file.canRead()) {
+                val mounts = file.readText()
+                val dataMount = mounts.lines().find { it.contains("/data") }
+                when {
+                    dataMount?.contains("f2fs") == true -> "f2fs"
+                    dataMount?.contains("ext4") == true -> "ext4"
+                    dataMount?.contains("erofs") == true -> "erofs"
+                    else -> "unknown"
+                }
+            } else "unknown"
         } catch (_: Exception) {
             "unknown"
         }
     }
 
     private fun getBatteryStats(): BatteryStats {
-        val intentFilter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
-        val batteryStatus = context.registerReceiver(null, intentFilter)
+        return try {
+            val intentFilter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+            val batteryStatus = context.registerReceiver(null, intentFilter)
 
-        val level = batteryStatus?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: 0
-        val scale = batteryStatus?.getIntExtra(BatteryManager.EXTRA_SCALE, 100) ?: 100
-        val percent = (level * 100 / scale)
+            val level = batteryStatus?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: 0
+            val scale = batteryStatus?.getIntExtra(BatteryManager.EXTRA_SCALE, 100) ?: 100
+            val percent = if (scale > 0) (level * 100 / scale) else 0
 
-        val temp = batteryStatus?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) ?: 0
-        val temperature = temp / 10f
+            val temp = batteryStatus?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) ?: 0
+            val temperature = temp / 10f
 
-        val status = batteryStatus?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) ?: -1
-        val isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||
-                status == BatteryManager.BATTERY_STATUS_FULL
+            val status = batteryStatus?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) ?: -1
+            val isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||
+                    status == BatteryManager.BATTERY_STATUS_FULL
 
-        val healthInt = batteryStatus?.getIntExtra(BatteryManager.EXTRA_HEALTH, -1) ?: -1
-        val health = when (healthInt) {
-            BatteryManager.BATTERY_HEALTH_GOOD -> "Good"
-            BatteryManager.BATTERY_HEALTH_OVERHEAT -> "Overheat"
-            BatteryManager.BATTERY_HEALTH_DEAD -> "Dead"
-            BatteryManager.BATTERY_HEALTH_COLD -> "Cold"
-            BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE -> "Over Voltage"
-            BatteryManager.BATTERY_HEALTH_UNSPECIFIED_FAILURE -> "Failure"
-            else -> "Unknown"
+            val healthInt = batteryStatus?.getIntExtra(BatteryManager.EXTRA_HEALTH, -1) ?: -1
+            val health = when (healthInt) {
+                BatteryManager.BATTERY_HEALTH_GOOD -> "Good"
+                BatteryManager.BATTERY_HEALTH_OVERHEAT -> "Overheat"
+                BatteryManager.BATTERY_HEALTH_DEAD -> "Dead"
+                BatteryManager.BATTERY_HEALTH_COLD -> "Cold"
+                BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE -> "Over Voltage"
+                BatteryManager.BATTERY_HEALTH_UNSPECIFIED_FAILURE -> "Failure"
+                else -> "Unknown"
+            }
+
+            val technology = batteryStatus?.getStringExtra(BatteryManager.EXTRA_TECHNOLOGY) ?: "Li-ion"
+            val voltage = batteryStatus?.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0) ?: 0
+
+            // Get battery capacity (mAh) - requires BatteryManager service
+            val batteryManager = context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
+            val capacity = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER) / 1000
+
+            // Calculate remaining time estimate
+            val remainingTime = calculateRemainingTime(percent, isCharging)
+
+            BatteryStats(
+                percent = percent,
+                temperature = temperature,
+                isCharging = isCharging,
+                health = health,
+                technology = technology,
+                voltage = voltage,
+                capacity = if (capacity > 0) capacity else 0,
+                remainingTime = remainingTime
+            )
+        } catch (e: Exception) {
+            BatteryStats(0, 0f, false, "Unknown", "Unknown", 0, 0, "Unknown")
         }
-
-        val technology = batteryStatus?.getStringExtra(BatteryManager.EXTRA_TECHNOLOGY) ?: "Li-ion"
-        val voltage = batteryStatus?.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0) ?: 0
-
-        // Get battery capacity (mAh) - requires BatteryManager service
-        val batteryManager = context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
-        val capacity = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER) / 1000
-
-        // Calculate remaining time estimate
-        val remainingTime = calculateRemainingTime(percent, isCharging)
-
-        return BatteryStats(
-            percent = percent,
-            temperature = temperature,
-            isCharging = isCharging,
-            health = health,
-            technology = technology,
-            voltage = voltage,
-            capacity = if (capacity > 0) capacity else 0,
-            remainingTime = remainingTime
-        )
     }
 
     private fun calculateRemainingTime(percent: Int, isCharging: Boolean): String {
-        // Simple estimation based on average usage patterns
-        if (isCharging) {
-            val remainingPercent = 100 - percent
-            val minutesToFull = (remainingPercent * 1.2).toInt() // Assume ~1.2 min per percent
-            return formatDurationShort((minutesToFull * 60 * 1000).toLong())
-        } else {
-            // Estimate based on current percent and average screen-on time of 6 hours at 100%
-            val minutesRemaining = (percent * 3.6).toInt() // 6 hours = 360 min for 100%
-            return formatDurationShort((minutesRemaining * 60 * 1000).toLong())
+        return try {
+            // Simple estimation based on average usage patterns
+            if (isCharging) {
+                val remainingPercent = 100 - percent
+                val minutesToFull = (remainingPercent * 1.2).toInt() // Assume ~1.2 min per percent
+                formatDurationShort((minutesToFull * 60 * 1000).toLong())
+            } else {
+                // Estimate based on current percent and average screen-on time of 6 hours at 100%
+                val minutesRemaining = (percent * 3.6).toInt() // 6 hours = 360 min for 100%
+                formatDurationShort((minutesRemaining * 60 * 1000).toLong())
+            }
+        } catch (e: Exception) {
+            "Unknown"
         }
     }
 
     private fun getNetworkStats(): NetworkStats {
-        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
-        val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+        return try {
+            val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
-        val network = connectivityManager.activeNetwork
-        val capabilities = network?.let { connectivityManager.getNetworkCapabilities(it) }
+            // Check permissions for WifiManager and TelephonyManager access
+            // If we don't handle this, it crashes on restricted devices
+            val wifiStats = try {
+                val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+                val network = connectivityManager.activeNetwork
+                val capabilities = network?.let { connectivityManager.getNetworkCapabilities(it) }
+                val wifiConnected = capabilities?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
 
-        val wifiConnected = capabilities?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
-        val mobileConnected = capabilities?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == true
+                if (wifiConnected) {
+                    @Suppress("DEPRECATION")
+                    val wifiInfo = wifiManager.connectionInfo
+                    val ssid = wifiInfo.ssid?.replace("\"", "") ?: "Unknown"
+                    val speed = wifiInfo.linkSpeed
+                    val rssi = wifiInfo.rssi
+                    val signalLevel = WifiManager.calculateSignalLevel(rssi, 100)
 
-        val wifiStats = if (wifiConnected) {
-            @Suppress("DEPRECATION")
-            val wifiInfo = wifiManager.connectionInfo
-            val ssid = wifiInfo.ssid?.replace("\"", "") ?: "Unknown"
-            val speed = wifiInfo.linkSpeed
-            val rssi = wifiInfo.rssi
-            val signalLevel = WifiManager.calculateSignalLevel(rssi, 100)
+                    val ip = try {
+                        val ipInt = wifiInfo.ipAddress
+                        String.format(
+                            "%d.%d.%d.%d",
+                            ipInt and 0xff,
+                            ipInt shr 8 and 0xff,
+                            ipInt shr 16 and 0xff,
+                            ipInt shr 24 and 0xff
+                        )
+                    } catch (_: Exception) { "" }
 
-            val ip = try {
-                val ipInt = wifiInfo.ipAddress
-                String.format(
-                    "%d.%d.%d.%d",
-                    ipInt and 0xff,
-                    ipInt shr 8 and 0xff,
-                    ipInt shr 16 and 0xff,
-                    ipInt shr 24 and 0xff
-                )
-            } catch (_: Exception) { "" }
-
-            WifiStats(
-                connected = true,
-                ssid = ssid,
-                ip = ip,
-                speed = speed,
-                signal = signalLevel,
-                signalDbm = rssi
-            )
-        } else {
-            WifiStats(
-                connected = false,
-                ssid = "",
-                ip = "",
-                speed = 0,
-                signal = 0,
-                signalDbm = 0
-            )
-        }
-
-        val mobileType = if (mobileConnected) {
-            @Suppress("DEPRECATION")
-            when (telephonyManager.networkType) {
-                TelephonyManager.NETWORK_TYPE_LTE -> "LTE"
-                TelephonyManager.NETWORK_TYPE_NR -> "5G"
-                TelephonyManager.NETWORK_TYPE_HSPAP -> "HSPA+"
-                TelephonyManager.NETWORK_TYPE_HSPA -> "HSPA"
-                TelephonyManager.NETWORK_TYPE_EDGE -> "EDGE"
-                TelephonyManager.NETWORK_TYPE_GPRS -> "GPRS"
-                else -> "Mobile"
+                    WifiStats(true, ssid, ip, speed, signalLevel, rssi)
+                } else {
+                    WifiStats(false, "", "", 0, 0, 0)
+                }
+            } catch (e: Exception) {
+                WifiStats(false, "", "", 0, 0, 0)
             }
-        } else {
-            ""
+
+            val (mobileConnected, mobileType, simPresent) = try {
+                val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+                val network = connectivityManager.activeNetwork
+                val capabilities = network?.let { connectivityManager.getNetworkCapabilities(it) }
+                val mobConnected = capabilities?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == true
+
+                val type = if (mobConnected) {
+                    @Suppress("DEPRECATION")
+                    when (telephonyManager.networkType) {
+                        TelephonyManager.NETWORK_TYPE_LTE -> "LTE"
+                        TelephonyManager.NETWORK_TYPE_NR -> "5G"
+                        TelephonyManager.NETWORK_TYPE_HSPAP -> "HSPA+"
+                        TelephonyManager.NETWORK_TYPE_HSPA -> "HSPA"
+                        TelephonyManager.NETWORK_TYPE_EDGE -> "EDGE"
+                        TelephonyManager.NETWORK_TYPE_GPRS -> "GPRS"
+                        else -> "Mobile"
+                    }
+                } else ""
+
+                val sim = telephonyManager.simState == TelephonyManager.SIM_STATE_READY
+                Triple(mobConnected, type, sim)
+            } catch (e: Exception) {
+                Triple(false, "", false)
+            }
+
+            NetworkStats(
+                wifi = wifiStats,
+                mobile = MobileStats(connected = mobileConnected, type = mobileType),
+                sim = SimStats(present = simPresent)
+            )
+        } catch (e: Exception) {
+            NetworkStats(WifiStats(false, "", "", 0, 0, 0), MobileStats(false, ""), SimStats(false))
         }
-
-        val simPresent = telephonyManager.simState == TelephonyManager.SIM_STATE_READY
-
-        return NetworkStats(
-            wifi = wifiStats,
-            mobile = MobileStats(connected = mobileConnected, type = mobileType),
-            sim = SimStats(present = simPresent)
-        )
     }
 
     private fun getDisplayStats(): DisplayStats {
-        val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        val display = windowManager.defaultDisplay
-        val mode = display.mode
+        return try {
+            val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+            val display = windowManager.defaultDisplay
+            val mode = display.mode
 
-        val width = mode.physicalWidth
-        val height = mode.physicalHeight
-        val refreshRate = mode.refreshRate.toInt()
+            val width = mode.physicalWidth
+            val height = mode.physicalHeight
+            val refreshRate = mode.refreshRate.toInt()
 
-        val metrics = context.resources.displayMetrics
-        val density = metrics.densityDpi
+            val metrics = context.resources.displayMetrics
+            val density = metrics.densityDpi
 
-        // Calculate screen size in inches
-        val widthInches = width / metrics.xdpi.toDouble()
-        val heightInches = height / metrics.ydpi.toDouble()
-        val screenSize = sqrt(widthInches * widthInches + heightInches * heightInches)
-        val screenSizeStr = String.format("%.2f\"", screenSize)
+            // Calculate screen size in inches
+            val widthInches = width / metrics.xdpi.toDouble()
+            val heightInches = height / metrics.ydpi.toDouble()
+            val screenSize = sqrt(widthInches * widthInches + heightInches * heightInches)
+            val screenSizeStr = String.format("%.2f\"", screenSize)
 
-        return DisplayStats(
-            gpu = getGpuName(),
-            resolution = "$width x $height",
-            density = density,
-            screenSize = screenSizeStr,
-            frameRate = refreshRate
-        )
+            DisplayStats(
+                gpu = getGpuName(),
+                resolution = "$width x $height",
+                density = density,
+                screenSize = screenSizeStr,
+                frameRate = refreshRate
+            )
+        } catch (e: Exception) {
+            DisplayStats("Unknown", "Unknown", 0, "Unknown", 0)
+        }
     }
 
     private fun getDeviceModelName(): String {
-        val manufacturer = Build.MANUFACTURER
-        val model = Build.MODEL
+        return try {
+            val manufacturer = Build.MANUFACTURER
+            val model = Build.MODEL
 
-        return if (model.startsWith(manufacturer, ignoreCase = true)) {
-            model.replaceFirstChar { it.uppercase() }
-        } else {
-            "${manufacturer.replaceFirstChar { it.uppercase() }} $model"
+            if (model.startsWith(manufacturer, ignoreCase = true)) {
+                model.replaceFirstChar { it.uppercase() }
+            } else {
+                "${manufacturer.replaceFirstChar { it.uppercase() }} $model"
+            }
+        } catch (e: Exception) {
+            "Unknown Device"
         }
     }
 
     private fun getProcessorName(): String {
-        // Try to get SOC model on Android 12+
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val socModel = Build.SOC_MODEL
-            if (socModel.isNotEmpty() && socModel != "UNKNOWN") {
-                return formatProcessorName(socModel)
+        return try {
+            // Try to get SOC model on Android 12+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val socModel = Build.SOC_MODEL
+                if (socModel.isNotEmpty() && socModel != "UNKNOWN") {
+                    return formatProcessorName(socModel)
+                }
             }
+
+            // Fallback to reading from /proc/cpuinfo
+            try {
+                val file = File("/proc/cpuinfo")
+                if (file.canRead()) {
+                    val cpuInfo = file.readText()
+                    val hardwareLine = cpuInfo.lines().find { it.trim().startsWith("Hardware") }
+                    val hardware = hardwareLine?.substringAfter(":")?.trim()
+
+                    if (hardware != null) {
+                        return formatProcessorName(hardware)
+                    }
+                }
+            } catch (_: Exception) {}
+
+            Build.HARDWARE
+        } catch (e: Exception) {
+            "Unknown Processor"
         }
-
-        // Fallback to reading from /proc/cpuinfo
-        try {
-            val cpuInfo = File("/proc/cpuinfo").readText()
-            val hardwareLine = cpuInfo.lines().find { it.trim().startsWith("Hardware") }
-            val hardware = hardwareLine?.substringAfter(":")?.trim()
-
-            if (hardware != null) {
-                return formatProcessorName(hardware)
-            }
-        } catch (_: Exception) {}
-
-        return Build.HARDWARE
     }
 
     private fun formatProcessorName(name: String): String {
@@ -567,26 +644,30 @@ class SystemMonitor @Inject constructor(
     }
 
     private fun getAndroidVersionString(): String {
-        val version = Build.VERSION.RELEASE
-        val sdkInt = Build.VERSION.SDK_INT
+        return try {
+            val version = Build.VERSION.RELEASE
+            val sdkInt = Build.VERSION.SDK_INT
 
-        val codename = when (sdkInt) {
-            36 -> "Baklava"
-            35 -> "Vanilla Ice Cream"
-            34 -> "Upside Down Cake"
-            33 -> "Tiramisu"
-            32 -> "Sv2"
-            31 -> "Snow Cone"
-            30 -> "Red Velvet Cake"
-            29 -> "Quince Tart"
-            28 -> "Pie"
-            else -> ""
-        }
+            val codename = when (sdkInt) {
+                36 -> "Baklava"
+                35 -> "Vanilla Ice Cream"
+                34 -> "Upside Down Cake"
+                33 -> "Tiramisu"
+                32 -> "Sv2"
+                31 -> "Snow Cone"
+                30 -> "Red Velvet Cake"
+                29 -> "Quince Tart"
+                28 -> "Pie"
+                else -> ""
+            }
 
-        return if (codename.isNotEmpty()) {
-            "Android $version ($codename)"
-        } else {
-            "Android $version"
+            if (codename.isNotEmpty()) {
+                "Android $version ($codename)"
+            } else {
+                "Android $version"
+            }
+        } catch (e: Exception) {
+            "Unknown Android"
         }
     }
 
