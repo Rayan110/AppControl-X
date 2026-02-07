@@ -42,10 +42,26 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun setupWebView() {
-        // Create an AssetLoader to load assets from a virtual domain
+        // Create an AssetLoader with custom MIME type handling
+        // This ensures .js files are always served as application/javascript
+        val originalHandler = AssetsPathHandler(this)
+        val mimeTypeHandler = object : WebViewAssetLoader.PathHandler {
+            override fun handle(path: String): WebResourceResponse? {
+                val response = originalHandler.handle(path) ?: return null
+
+                // Force correct MIME types
+                if (path.endsWith(".js")) {
+                    response.mimeType = "application/javascript"
+                } else if (path.endsWith(".css")) {
+                    response.mimeType = "text/css"
+                }
+                return response
+            }
+        }
+
         val assetLoader = WebViewAssetLoader.Builder()
             .setDomain("appassets.androidplatform.net")
-            .addPathHandler("/assets/", AssetsPathHandler(this))
+            .addPathHandler("/assets/", mimeTypeHandler)
             .build()
 
         binding.webView.apply {
