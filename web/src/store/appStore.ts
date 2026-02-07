@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 import { bridge, isDev } from '@/api/bridge'
 import type {
   ExecutionMode,
@@ -13,7 +14,7 @@ interface AppState {
   executionMode: ExecutionMode
   isLoading: boolean
   apps: AppInfo[]
-  appIcons: Record<string, string | null> // Icon cache
+  appIcons: Record<string, string | null>
   systemStats: SystemStats | null
   deviceInfo: DeviceInfo | null
   cpuFrequencies: number[]
@@ -23,11 +24,12 @@ interface AppState {
   selectedApps: Set<string>
   isSelectionMode: boolean
   accessLost: boolean
+  lastUpdated: number
 
   initializeApp: () => void
   detectExecutionMode: () => void
   setExecutionMode: (mode: ExecutionMode) => void
-  refreshApps: () => void
+  refreshApps: (force?: boolean) => void
   loadAppIcon: (packageName: string) => Promise<void>
   refreshSystemStats: () => void
   refreshDeviceInfo: () => void
@@ -48,7 +50,7 @@ const defaultFilter: AppFilter = {
   searchQuery: ''
 }
 
-// Development mock data - only used when running in browser without native bridge
+// Development mock data
 const getDevMockData = () => {
   if (!isDev()) return null
 
@@ -128,190 +130,214 @@ const getDevMockData = () => {
   }
 }
 
-export const useAppStore = create<AppState>((set, get) => ({
-  executionMode: 'NONE',
-  isLoading: false,
-  apps: [],
-  appIcons: {},
-  systemStats: null,
-  deviceInfo: null,
-  cpuFrequencies: [],
-  cpuTemp: null,
-  gpuTemp: null,
-  filter: defaultFilter,
-  selectedApps: new Set(),
-  isSelectionMode: false,
-  accessLost: false,
+export const useAppStore = create<AppState>()(
+  persist(
+    (set, get) => ({
+      executionMode: 'NONE',
+      isLoading: false,
+      apps: [],
+      appIcons: {},
+      systemStats: null,
+      deviceInfo: null,
+      cpuFrequencies: [],
+      cpuTemp: null,
+      gpuTemp: null,
+      filter: defaultFilter,
+      selectedApps: new Set(),
+      isSelectionMode: false,
+      accessLost: false,
+      lastUpdated: 0,
 
-  initializeApp: () => {
-    // Detect execution mode (root/shizuku) at startup
-    get().detectExecutionMode()
+      initializeApp: () => {
+        // Detect execution mode
+        get().detectExecutionMode()
 
-    // Load apps IMMEDIATELY without waiting - async in background
-    setTimeout(() => get().refreshApps(), 0)
+        // Refresh apps in background (uses cache if available)
+        setTimeout(() => get().refreshApps(), 0)
 
-    // Load system stats in parallel - faster than sequential
-    Promise.all([
-      get().refreshSystemStats(),
-      get().refreshDeviceInfo()
-    ])
+        // Refresh system stats in background
+        setTimeout(() => {
+          get().refreshSystemStats()
+          get().refreshDeviceInfo()
+        }, 0)
 
-    // Start real-time monitors - SUPER FAST!
-    bridge.startSystemMonitor(300, (stats) => { // 300ms instead of 2s
-      set({ systemStats: stats })
-    })
+        // Start real-time monitors
+        bridge.startSystemMonitor(300, (stats) => {
+          set({ systemStats: stats })
+        })
 
-    bridge.startRealtimeMonitor(200, (status) => { // 200ms for CPU/temps
-      set({
-        cpuFrequencies: status.cpuFrequencies,
-        cpuTemp: status.cpuTemp,
-        gpuTemp: status.gpuTemp
-      })
-    })
+        bridge.startRealtimeMonitor(200, (status) => {
+          set({
+            cpuFrequencies: status.cpuFrequencies,
+            cpuTemp: status.cpuTemp,
+            gpuTemp: status.gpuTemp
+          })
+        })
 
-    // Listen for execution mode changes (access loss detection)
-    bridge.onExecutionModeChanged((mode) => {
-      const currentMode = get().executionMode
-      if (currentMode !== 'NONE' && mode === 'NONE') {
-        set({ executionMode: mode, accessLost: true })
-      } else {
+        // Listen for execution mode changes
+        bridge.onExecutionModeChanged((mode) => {
+          const currentMode = get().executionMode
+          if (currentMode !== 'NONE' && mode === 'NONE') {
+            set({ executionMode: mode, accessLost: true })
+          } else {
+            set({ executionMode: mode })
+          }
+        })
+      },
+
+      detectExecutionMode: () => {
+        if (!bridge.isAvailable()) {
+          if (isDev()) {
+            set({ executionMode: 'ROOT' })
+          } else {
+            set({ executionMode: 'NONE' })
+          }
+          return
+        }
+
+        const mode = bridge.getExecutionMode()
         set({ executionMode: mode })
+
+        if (mode === 'NONE') {
+          const hasRoot = bridge.checkRootAccess()
+          if (hasRoot) {
+            set({ executionMode: 'ROOT' })
+            return
+          }
+
+          const shizuku = bridge.checkShizukuAccess()
+          if (shizuku.available && shizuku.granted) {
+            set({ executionMode: 'SHIZUKU' })
+          }
+        }
+      },
+
+      setExecutionMode: (mode) => {
+        if (bridge.setExecutionMode(mode)) {
+          set({ executionMode: mode })
+        }
+      },
+
+      refreshApps: (force = false) => {
+        const { apps, lastUpdated } = get()
+        const now = Date.now()
+        const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
+
+        // Use cache if not forcing and cache is fresh
+        if (!force && apps.length > 0 && (now - lastUpdated) < CACHE_TTL) {
+          console.log('Using cached app list')
+          return
+        }
+
+        // Only show loading if no cached data
+        if (apps.length === 0) {
+          set({ isLoading: true })
+        }
+
+        try {
+          const freshApps = bridge.getAppList(get().filter)
+          set({ apps: freshApps, isLoading: false, lastUpdated: now })
+        } catch {
+          set({ isLoading: false })
+        }
+      },
+
+      loadAppIcon: async (packageName: string) => {
+        const { appIcons } = get()
+        if (appIcons[packageName] !== undefined) return
+
+        set({ appIcons: { ...appIcons, [packageName]: null } })
+
+        const icon = bridge.getAppIcon(packageName)
+        if (icon) {
+          set({ appIcons: { ...get().appIcons, [packageName]: icon } })
+        }
+      },
+
+      refreshSystemStats: () => {
+        const stats = bridge.getSystemStats()
+        if (stats) {
+          set({ systemStats: stats })
+        } else if (isDev()) {
+          const mockData = getDevMockData()
+          if (mockData) {
+            set({ systemStats: mockData.systemStats })
+          }
+        }
+      },
+
+      refreshDeviceInfo: () => {
+        const info = bridge.getDeviceInfo()
+        if (info) {
+          set({ deviceInfo: info })
+        } else if (isDev()) {
+          const mockData = getDevMockData()
+          if (mockData) {
+            set({ deviceInfo: mockData.deviceInfo })
+          }
+        }
+      },
+
+      setFilter: (newFilter) => {
+        set((state) => ({
+          filter: { ...state.filter, ...newFilter }
+        }))
+        get().refreshApps(true) // Force refresh on filter change
+      },
+
+      toggleAppSelection: (packageName) => {
+        set((state) => {
+          const newSet = new Set(state.selectedApps)
+          if (newSet.has(packageName)) {
+            newSet.delete(packageName)
+          } else {
+            newSet.add(packageName)
+          }
+          return { selectedApps: newSet }
+        })
+      },
+
+      selectAllApps: () => {
+        const { apps } = get()
+        const allPackages = new Set(
+          apps.filter(app => app.safetyLevel === 'SAFE').map(app => app.packageName)
+        )
+        set({ selectedApps: allPackages })
+      },
+
+      clearSelection: () => {
+        set({ selectedApps: new Set(), isSelectionMode: false })
+      },
+
+      setSelectionMode: (enabled) => {
+        set({ isSelectionMode: enabled })
+        if (!enabled) {
+          set({ selectedApps: new Set() })
+        }
+      },
+
+      executeAction: async (packageName, action) => {
+        const result = bridge.executeAction(packageName, action)
+        if (result.success) {
+          get().refreshApps(true) // Force refresh after action
+        }
+        return result.success
+      },
+
+      clearAccessLost: () => {
+        set({ accessLost: false })
       }
-    })
-  },
-
-  detectExecutionMode: () => {
-    // First check if native bridge is available
-    if (!bridge.isAvailable()) {
-      if (isDev()) {
-        // In dev mode, simulate ROOT access
-        set({ executionMode: 'ROOT' })
-      } else {
-        set({ executionMode: 'NONE' })
-      }
-      return
+    }),
+    {
+      name: 'appcontrolx-storage',
+      partialize: (state) => ({
+        apps: state.apps,
+        appIcons: state.appIcons,
+        systemStats: state.systemStats,
+        deviceInfo: state.deviceInfo,
+        executionMode: state.executionMode,
+        lastUpdated: state.lastUpdated
+      })
     }
-
-    // Get the actual execution mode from native
-    const mode = bridge.getExecutionMode()
-    set({ executionMode: mode })
-
-    // If mode is NONE, try to detect what's available
-    if (mode === 'NONE') {
-      const hasRoot = bridge.checkRootAccess()
-      if (hasRoot) {
-        set({ executionMode: 'ROOT' })
-        return
-      }
-
-      const shizuku = bridge.checkShizukuAccess()
-      if (shizuku.available && shizuku.granted) {
-        set({ executionMode: 'SHIZUKU' })
-      }
-    }
-  },
-
-  setExecutionMode: (mode) => {
-    if (bridge.setExecutionMode(mode)) {
-      set({ executionMode: mode })
-    }
-  },
-
-  refreshApps: () => {
-    set({ isLoading: true })
-    try {
-      const apps = bridge.getAppList(get().filter)
-      set({ apps, isLoading: false })
-    } catch {
-      set({ isLoading: false })
-    }
-  },
-
-  loadAppIcon: async (packageName: string) => {
-    const { appIcons } = get()
-    if (appIcons[packageName] !== undefined) return // Already loaded or loading
-
-    set({ appIcons: { ...appIcons, [packageName]: null } }) // Mark as loading
-
-    const icon = bridge.getAppIcon(packageName)
-    if (icon) {
-      set({ appIcons: { ...get().appIcons, [packageName]: icon } })
-    }
-  },
-
-  refreshSystemStats: () => {
-    const stats = bridge.getSystemStats()
-    if (stats) {
-      set({ systemStats: stats })
-    } else if (isDev()) {
-      // Only use mock data in development
-      const mockData = getDevMockData()
-      if (mockData) {
-        set({ systemStats: mockData.systemStats })
-      }
-    }
-  },
-
-  refreshDeviceInfo: () => {
-    const info = bridge.getDeviceInfo()
-    if (info) {
-      set({ deviceInfo: info })
-    } else if (isDev()) {
-      // Only use mock data in development
-      const mockData = getDevMockData()
-      if (mockData) {
-        set({ deviceInfo: mockData.deviceInfo })
-      }
-    }
-  },
-
-  setFilter: (newFilter) => {
-    set((state) => ({
-      filter: { ...state.filter, ...newFilter }
-    }))
-    get().refreshApps()
-  },
-
-  toggleAppSelection: (packageName) => {
-    set((state) => {
-      const newSet = new Set(state.selectedApps)
-      if (newSet.has(packageName)) {
-        newSet.delete(packageName)
-      } else {
-        newSet.add(packageName)
-      }
-      return { selectedApps: newSet }
-    })
-  },
-
-  selectAllApps: () => {
-    const { apps } = get()
-    const allPackages = new Set(
-      apps.filter(app => app.safetyLevel === 'SAFE').map(app => app.packageName)
-    )
-    set({ selectedApps: allPackages })
-  },
-
-  clearSelection: () => {
-    set({ selectedApps: new Set(), isSelectionMode: false })
-  },
-
-  setSelectionMode: (enabled) => {
-    set({ isSelectionMode: enabled })
-    if (!enabled) {
-      set({ selectedApps: new Set() })
-    }
-  },
-
-  executeAction: async (packageName, action) => {
-    const result = bridge.executeAction(packageName, action)
-    if (result.success) {
-      get().refreshApps()
-    }
-    return result.success
-  },
-
-  clearAccessLost: () => {
-    set({ accessLost: false })
-  }
-}))
+  )
+)
