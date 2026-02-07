@@ -1,24 +1,19 @@
 package com.appcontrolx.ui
 
 import android.annotation.SuppressLint
-import android.content.Intent
 import android.graphics.Color
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.os.Environment
-import android.provider.Settings
 import android.view.View
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.Button
-import android.widget.LinearLayout
 import androidx.activity.OnBackPressedCallback
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import com.appcontrolx.R
+import androidx.webkit.WebViewAssetLoader
+import androidx.webkit.WebViewAssetLoader.AssetsPathHandler
 import com.appcontrolx.bridge.NativeBridge
 import com.appcontrolx.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -32,74 +27,24 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var nativeBridge: NativeBridge
 
-    private val storagePermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) {
-        checkAndSetup()
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setupPermissionButton()
-        checkAndSetup()
+        setupWebView()
         setupBackHandler()
-    }
-
-    private fun setupPermissionButton() {
-        findViewById<Button>(R.id.btn_grant_permission).setOnClickListener {
-            requestStoragePermission()
-        }
-    }
-
-    private fun checkAndSetup() {
-        if (hasStoragePermission()) {
-            showWebView()
-            setupWebView()
-        } else {
-            showPermissionLayout()
-        }
-    }
-
-    private fun hasStoragePermission(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            Environment.isExternalStorageManager()
-        } else {
-            true // For older versions, standard permissions flow applies, assuming granted for simplicity here or handled elsewhere if needed
-        }
-    }
-
-    private fun requestStoragePermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            try {
-                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-                intent.addCategory("android.intent.category.DEFAULT")
-                intent.data = Uri.parse(String.format("package:%s", applicationContext.packageName))
-                storagePermissionLauncher.launch(intent)
-            } catch (e: Exception) {
-                val intent = Intent()
-                intent.action = Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION
-                storagePermissionLauncher.launch(intent)
-            }
-        }
-    }
-
-    private fun showWebView() {
-        binding.webView.visibility = View.VISIBLE
-        binding.progressBar.visibility = View.VISIBLE // Will be hidden by onPageFinished
-        findViewById<LinearLayout>(R.id.permission_layout).visibility = View.GONE
-    }
-
-    private fun showPermissionLayout() {
-        binding.webView.visibility = View.GONE
-        binding.progressBar.visibility = View.GONE
-        findViewById<LinearLayout>(R.id.permission_layout).visibility = View.VISIBLE
     }
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun setupWebView() {
+        // Create an AssetLoader to load assets from a virtual domain
+        // This avoids file:// protocol issues and CORS problems
+        val assetLoader = WebViewAssetLoader.Builder()
+            .setDomain("appassets.androidplatform.net")
+            .addPathHandler("/assets/", AssetsPathHandler(this))
+            .build()
+
         binding.webView.apply {
             setBackgroundColor(Color.TRANSPARENT)
 
@@ -107,8 +52,11 @@ class MainActivity : AppCompatActivity() {
                 javaScriptEnabled = true
                 domStorageEnabled = true
                 databaseEnabled = true
-                allowFileAccess = true
-                allowContentAccess = true
+
+                // Security: Disable direct file access as we are using AssetLoader
+                allowFileAccess = false
+                allowContentAccess = false
+
                 cacheMode = WebSettings.LOAD_DEFAULT
                 mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
                 setSupportZoom(false)
@@ -120,6 +68,14 @@ class MainActivity : AppCompatActivity() {
             }
 
             webViewClient = object : WebViewClient() {
+                override fun shouldInterceptRequest(
+                    view: WebView,
+                    request: WebResourceRequest
+                ): WebResourceResponse? {
+                    // Intercept requests and forward them to AssetLoader
+                    return assetLoader.shouldInterceptRequest(request.url)
+                }
+
                 override fun onPageFinished(view: WebView?, url: String?) {
                     super.onPageFinished(view, url)
                     binding.progressBar.visibility = View.GONE
@@ -137,7 +93,8 @@ class MainActivity : AppCompatActivity() {
             addJavascriptInterface(nativeBridge, "NativeBridge")
             nativeBridge.setWebView(this)
 
-            loadUrl("file:///android_asset/www/index.html")
+            // Load the app from the virtual secure origin
+            loadUrl("https://appassets.androidplatform.net/assets/www/index.html")
         }
     }
 
