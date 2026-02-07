@@ -2,8 +2,12 @@ package com.appcontrolx.ui
 
 import android.annotation.SuppressLint
 import android.graphics.Color
+import android.net.http.SslError
 import android.os.Bundle
+import android.util.Log
 import android.view.View
+import android.webkit.ConsoleMessage
+import android.webkit.SslErrorHandler
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
@@ -39,7 +43,6 @@ class MainActivity : AppCompatActivity() {
     @SuppressLint("SetJavaScriptEnabled")
     private fun setupWebView() {
         // Create an AssetLoader to load assets from a virtual domain
-        // This avoids file:// protocol issues and CORS problems
         val assetLoader = WebViewAssetLoader.Builder()
             .setDomain("appassets.androidplatform.net")
             .addPathHandler("/assets/", AssetsPathHandler(this))
@@ -72,8 +75,16 @@ class MainActivity : AppCompatActivity() {
                     view: WebView,
                     request: WebResourceRequest
                 ): WebResourceResponse? {
-                    // Intercept requests and forward them to AssetLoader
                     return assetLoader.shouldInterceptRequest(request.url)
+                }
+
+                override fun onReceivedSslError(
+                    view: WebView?,
+                    handler: SslErrorHandler?,
+                    error: SslError?
+                ) {
+                    Log.e("WebViewSsl", "SSL Error: $error")
+                    super.onReceivedSslError(view, handler, error)
                 }
 
                 override fun onPageFinished(view: WebView?, url: String?) {
@@ -87,6 +98,11 @@ class MainActivity : AppCompatActivity() {
                     if (newProgress < 100) {
                         binding.progressBar.visibility = View.VISIBLE
                     }
+                }
+
+                override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
+                    Log.d("WebViewConsole", "${consoleMessage?.message()} -- From line ${consoleMessage?.lineNumber()} of ${consoleMessage?.sourceId()}")
+                    return true
                 }
             }
 
