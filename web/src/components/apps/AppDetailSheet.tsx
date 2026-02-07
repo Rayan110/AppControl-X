@@ -95,43 +95,43 @@ export default function AppDetailSheet({ isOpen, onClose, app }: AppDetailSheetP
   return (
     <>
       <div className="modal-overlay" onClick={onClose} style={{ zIndex: 999 }}>
-        <div className="modal-content max-w-lg" onClick={e => e.stopPropagation()}>
+        <div className="modal-content max-w-md max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
           {/* Header */}
-          <div className="flex items-start gap-4 mb-6">
+          <div className="flex items-start gap-3 mb-4">
             {/* App Icon */}
-            <div className="w-16 h-16 flex-shrink-0">
+            <div className="w-12 h-12 flex-shrink-0">
               {app.iconBase64 ? (
                 <img
                   src={`data:image/png;base64,${app.iconBase64}`}
                   alt={app.appName}
-                  className="w-full h-full object-cover rounded-2xl"
+                  className="w-full h-full object-cover rounded-xl"
                 />
               ) : (
-                <div className="w-full h-full rounded-2xl bg-surface flex items-center justify-center">
-                  <Package size={32} className="text-text-muted" />
+                <div className="w-full h-full rounded-xl bg-surface flex items-center justify-center">
+                  <Package size={24} className="text-text-muted" />
                 </div>
               )}
             </div>
 
             {/* App Info */}
             <div className="flex-1 min-w-0">
-              <h2 className="text-lg font-bold text-text-primary truncate">{app.appName}</h2>
+              <h2 className="text-base font-bold text-text-primary truncate">{app.appName}</h2>
               <p className="text-xs text-text-muted font-mono truncate">{app.packageName}</p>
-              <div className="flex items-center gap-2 mt-2">
-                <span className="text-xs px-2 py-0.5 rounded-full bg-surface text-text-secondary">
+              <div className="flex items-center gap-1.5 mt-1.5">
+                <span className="text-xs px-1.5 py-0.5 rounded-md bg-surface text-text-secondary">
                   v{app.versionName}
                 </span>
                 {app.isSystemApp ? (
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-text-muted/10 text-text-muted">
-                    System App
+                  <span className="text-xs px-1.5 py-0.5 rounded-md bg-text-muted/10 text-text-muted">
+                    System
                   </span>
                 ) : (
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-success/10 text-success">
-                    User App
+                  <span className="text-xs px-1.5 py-0.5 rounded-md bg-success/10 text-success">
+                    User
                   </span>
                 )}
                 {app.isFrozen && (
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-info/10 text-info">
+                  <span className="text-xs px-1.5 py-0.5 rounded-md bg-info/10 text-info">
                     Frozen
                   </span>
                 )}
@@ -141,14 +141,14 @@ export default function AppDetailSheet({ isOpen, onClose, app }: AppDetailSheetP
             {/* Close Button */}
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-lg bg-surface flex items-center justify-center hover:bg-surface-hover transition-colors"
+              className="w-7 h-7 rounded-lg bg-surface flex items-center justify-center hover:bg-surface-hover transition-colors"
             >
-              <X size={16} className="text-text-muted" />
+              <X size={14} className="text-text-muted" />
             </button>
           </div>
 
           {/* Info Grid */}
-          <div className="grid grid-cols-2 gap-3 mb-6">
+          <div className="grid grid-cols-2 gap-2 mb-4">
             <InfoItem
               icon={HardDrive}
               label="App Size"
@@ -187,28 +187,28 @@ export default function AppDetailSheet({ isOpen, onClose, app }: AppDetailSheetP
 
           {/* Background State Section */}
           {app.backgroundOps && (
-            <div className="mb-6">
+            <div className="mb-4">
               <button
                 onClick={() => setShowBackgroundOps(!showBackgroundOps)}
-                className="w-full flex items-center justify-between p-3 rounded-xl bg-surface hover:bg-surface-hover transition-colors"
+                className="w-full flex items-center justify-between p-2.5 rounded-lg bg-surface hover:bg-surface-hover transition-colors"
               >
                 <div className="flex items-center gap-2">
-                  <ShieldAlert size={16} className="text-text-secondary" />
+                  <ShieldAlert size={14} className="text-text-secondary" />
                   <span className="text-sm font-medium text-text-primary">Background State</span>
                 </div>
                 {showBackgroundOps ? (
-                  <ChevronUp size={16} className="text-text-muted" />
+                  <ChevronUp size={14} className="text-text-muted" />
                 ) : (
-                  <ChevronDown size={16} className="text-text-muted" />
+                  <ChevronDown size={14} className="text-text-muted" />
                 )}
               </button>
 
               {showBackgroundOps && (
-                <div className="mt-2 p-4 rounded-xl bg-surface space-y-3 animate-slide-down">
+                <div className="mt-2 p-3 rounded-lg bg-surface space-y-2 animate-slide-down">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-text-secondary">RUN_IN_BACKGROUND</span>
+                    <span className="text-xs text-text-secondary">RUN_IN_BACKGROUND</span>
                     <span className={cn(
-                      "text-sm font-medium",
+                      "text-xs font-medium",
                       app.backgroundOps.runInBackground === 'allow' ? 'text-success' :
                       app.backgroundOps.runInBackground === 'deny' ? 'text-error' :
                       'text-warning'
@@ -217,9 +217,9 @@ export default function AppDetailSheet({ isOpen, onClose, app }: AppDetailSheetP
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-text-secondary">RUN_ANY_IN_BACKGROUND</span>
+                    <span className="text-xs text-text-secondary">RUN_ANY_IN_BACKGROUND</span>
                     <span className={cn(
-                      "text-sm font-medium",
+                      "text-xs font-medium",
                       app.backgroundOps.runAnyInBackground === 'allow' ? 'text-success' :
                       app.backgroundOps.runAnyInBackground === 'deny' ? 'text-error' :
                       'text-warning'
@@ -227,7 +227,7 @@ export default function AppDetailSheet({ isOpen, onClose, app }: AppDetailSheetP
                       {app.backgroundOps.runAnyInBackground}
                     </span>
                   </div>
-                  <p className="text-xs text-text-muted italic">
+                  <p className="text-xs text-text-muted italic pt-1">
                     This value may reset itself, this is normal.
                   </p>
                 </div>
@@ -236,8 +236,8 @@ export default function AppDetailSheet({ isOpen, onClose, app }: AppDetailSheetP
           )}
 
           {/* Quick Actions */}
-          <div className="space-y-3">
-            <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider">
+          <div className="space-y-2.5">
+            <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wide">
               Quick Actions
             </h3>
 
@@ -322,7 +322,7 @@ export default function AppDetailSheet({ isOpen, onClose, app }: AppDetailSheetP
             </div>
 
             {/* Secondary Actions - 2 columns */}
-            <div className="grid grid-cols-2 gap-2 pt-2">
+            <div className="grid grid-cols-2 gap-2 pt-1">
               {/* App Info */}
               <ActionButton
                 icon={Info}
@@ -394,12 +394,12 @@ interface InfoItemProps {
 
 function InfoItem({ icon: Icon, label, value, valueClass }: InfoItemProps) {
   return (
-    <div className="p-3 rounded-xl bg-surface col-span-2">
-      <div className="flex items-center gap-2 mb-1">
-        <Icon size={12} className="text-text-muted" />
+    <div className="p-2 rounded-lg bg-surface">
+      <div className="flex items-center gap-1.5 mb-0.5">
+        <Icon size={11} className="text-text-muted" />
         <span className="text-xs text-text-muted">{label}</span>
       </div>
-      <p className={cn('text-sm font-medium', valueClass || 'text-text-primary')}>
+      <p className={cn('text-sm font-medium truncate', valueClass || 'text-text-primary')}>
         {value}
       </p>
     </div>
@@ -437,18 +437,18 @@ function ActionButton({
       onClick={onClick}
       disabled={disabled || loading}
       className={cn(
-        'flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl transition-all duration-200',
+        'flex flex-col items-center justify-center gap-1 p-2.5 rounded-lg transition-all duration-200',
         colorStyles[color],
         disabled && 'opacity-50 cursor-not-allowed',
         'active:scale-[0.95]'
       )}
     >
       {loading ? (
-        <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
       ) : (
-        <Icon size={18} strokeWidth={1.5} />
+        <Icon size={16} strokeWidth={1.5} />
       )}
-      <span className="text-xs font-medium">{label}</span>
+      <span className="text-xs font-medium leading-tight">{label}</span>
     </button>
   )
 }
