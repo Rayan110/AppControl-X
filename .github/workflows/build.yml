@@ -37,9 +37,11 @@ jobs:
           retention-days: 1
 
   build-android:
-    name: Build Android APK
+    name: Build Android
     needs: build-web
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -60,6 +62,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      # 1. Debug Build
       - name: Build Debug APK
         run: ./gradlew assembleDebug --no-daemon
 
@@ -68,4 +71,42 @@ jobs:
         with:
           name: AppControlX-debug
           path: app/build/outputs/apk/debug/*.apk
+          retention-days: 7
+
+      # 2. Release Build (Logic to handle both Real Sign and Generated Sign)
+      - name: Configure Keystore
+        id: sign_config
+        run: |
+          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
+            echo "Found secrets. Setting up Real Signing..."
+            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > release.keystore
+            echo "KEYSTORE_FILE=$(pwd)/release.keystore" >> $GITHUB_ENV
+            echo "KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
+            echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" >> $GITHUB_ENV
+            echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> $GITHUB_ENV
+            echo "build_type=real-signed" >> $GITHUB_OUTPUT
+          else
+            echo "No secrets found. Setting up Generated Signing..."
+            keytool -genkey -v -keystore release.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Android Debug,O=Android,C=US"
+            echo "KEYSTORE_FILE=$(pwd)/release.keystore" >> $GITHUB_ENV
+            echo "KEYSTORE_PASSWORD=android" >> $GITHUB_ENV
+            echo "KEY_ALIAS=androiddebugkey" >> $GITHUB_ENV
+            echo "KEY_PASSWORD=android" >> $GITHUB_ENV
+            echo "build_type=generated-signed" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build Release APK
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: Rename Release APK
+        run: |
+          cd app/build/outputs/apk/release/
+          # Find the release apk (it might include version number)
+          find . -name "*release.apk" -exec mv {} AppControlX-release-${{ steps.sign_config.outputs.build_type }}.apk \;
+
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: AppControlX-release-${{ steps.sign_config.outputs.build_type }}
+          path: app/build/outputs/apk/release/*.apk
           retention-days: 7

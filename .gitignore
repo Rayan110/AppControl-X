@@ -68,6 +68,7 @@ vcs.xml
 # Node modules (React)
 node_modules/
 web/node_modules/
+web/.vite/
 
 # React build output (will be generated)
 app/src/main/assets/www/

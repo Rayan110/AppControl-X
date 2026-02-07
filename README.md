@@ -122,7 +122,7 @@ Open the project in Android Studio and run on device/emulator.
 
 ## License
 
-Apache License 2.0
+GPL-3.0
 
 ---
 
