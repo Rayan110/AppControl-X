@@ -3,8 +3,7 @@ import { cn } from '@/lib/utils'
 
 interface PageContainerProps {
   children: ReactNode
-  title?: string
-  subtitle?: string
+  title: string
   className?: string
   headerRight?: ReactNode
 }
@@ -12,26 +11,23 @@ interface PageContainerProps {
 export default function PageContainer({
   children,
   title,
-  subtitle,
   className,
   headerRight
 }: PageContainerProps) {
   return (
-    <div className={cn('px-4 pt-6 pb-4 safe-top animate-fade-in', className)}>
-      {(title || headerRight) && (
-        <div className="flex items-center justify-between mb-5 min-h-[40px]">
-          <div>
-            {title && (
-              <h1 className="text-2xl font-bold text-text-primary">{title}</h1>
-            )}
-            {subtitle && (
-              <p className="text-sm text-text-secondary mt-0.5">{subtitle}</p>
-            )}
-          </div>
+    <div className={cn('flex flex-col min-h-0', className)}>
+      {/* Page Title Bar - sticky, fixed height */}
+      <div className="sticky top-0 z-30 flex items-center justify-between px-4 h-14 bg-background border-b border-card-border safe-top">
+        <h1 className="text-lg font-bold text-text-primary">{title}</h1>
+        <div className="flex items-center gap-2">
           {headerRight}
         </div>
-      )}
-      {children}
+      </div>
+
+      {/* Content Area */}
+      <div className="flex-1 overflow-y-auto px-4 py-4 animate-fade-in">
+        {children}
+      </div>
     </div>
   )
 }

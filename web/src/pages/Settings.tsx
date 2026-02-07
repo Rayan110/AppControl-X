@@ -64,7 +64,7 @@ export default function Settings() {
   }[executionMode]
 
   return (
-    <PageContainer title="Settings" subtitle="App configuration">
+    <PageContainer title="Settings">
       {/* Access Lost Warning */}
       {accessLost && (
         <div className="card p-4 mb-6 border-error/50 animate-fade-in-up">
@@ -90,12 +90,6 @@ export default function Settings() {
           </div>
         </div>
       )}
-
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-text-primary">Settings</h1>
-        <p className="text-sm text-text-secondary mt-1">Configure app behavior</p>
-      </div>
 
       <div className="space-y-6">
         {/* Execution Mode Section */}
@@ -619,8 +613,21 @@ function AppInfoModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
 
         <div className="modal-body space-y-4">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary-light flex items-center justify-center">
-              <span className="text-3xl font-black text-white">A</span>
+            <div className="w-16 h-16 rounded-2xl bg-[#e3f2fd] flex items-center justify-center overflow-hidden">
+              <svg viewBox="0 0 108 108" className="w-12 h-12">
+                <path
+                  fill="#1E88E5"
+                  d="M54,24 L58,24 L60,20 L64,20 L66,24 L70,26 L74,24 L77,27 L75,31 L78,34 L82,34 L84,38 L84,42 L80,44 L82,48 L82,52 L84,54 L84,58 L82,60 L80,64 L84,66 L84,70 L82,74 L78,74 L75,77 L77,81 L74,84 L70,82 L66,84 L64,88 L60,88 L58,84 L54,84 L50,84 L48,88 L44,88 L42,84 L38,82 L34,84 L31,81 L33,77 L30,74 L26,74 L24,70 L24,66 L28,64 L26,60 L26,56 L24,54 L24,50 L26,48 L28,44 L24,42 L24,38 L26,34 L30,34 L33,31 L31,27 L34,24 L38,26 L42,24 L44,20 L48,20 L50,24 Z"
+                />
+                <path
+                  fill="white"
+                  d="M54,34 A20,20 0 1,1 54,74 A20,20 0 1,1 54,34z"
+                />
+                <path
+                  fill="#1E88E5"
+                  d="M54,38 L66,70 L60,70 L57,62 L51,62 L48,70 L42,70 L54,38z M54,48 L52,58 L56,58 L54,48z"
+                />
+              </svg>
             </div>
             <div>
               <h3 className="text-xl font-bold text-text-primary">AppControlX</h3>
@@ -629,10 +636,10 @@ function AppInfoModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
           </div>
 
           <div className="space-y-2">
-            <InfoRow label="Developer" value="AppControlX Team" />
+            <InfoRow label="Developer" value="risunCode" />
             <InfoRow label="Build" value="2026.02.07" />
             <InfoRow label="Framework" value="React + Kotlin" />
-            <InfoRow label="License" value="Apache 2.0" />
+            <InfoRow label="License" value="GPL v3" />
           </div>
 
           <p className="text-xs text-text-muted text-center pt-2">
