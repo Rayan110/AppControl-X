@@ -7,6 +7,7 @@ interface NativeBridgeInterface {
   checkShizukuAccess(): string
   requestShizukuPermission(): void
   getAppList(filter: string): string
+  getAppIcon(packageName: string): string
   getAppDetail(packageName: string): string
   executeAction(packageName: string, action: string): string
   executeBatchAction(packages: string, action: string, callbackId: string): void
@@ -14,8 +15,8 @@ interface NativeBridgeInterface {
   getDeviceInfo(): string
   startSystemMonitor(intervalMs: number): void
   stopSystemMonitor(): void
-  startCpuMonitor(intervalMs: number): void
-  stopCpuMonitor(): void
+  startRealtimeMonitor(intervalMs: number): void
+  stopRealtimeMonitor(): void
   getActionHistory(): string
   getSafetyStatus(packageName: string): string
   // Tools & Activity Launcher
@@ -31,7 +32,7 @@ declare global {
     NativeBridge: NativeBridgeInterface
     onNativeCallback: (callbackId: string, data: string) => void
     onSystemStatsUpdate: (data: string) => void
-    onCpuFrequencyUpdate: (data: string) => void
+    onRealtimeStatusUpdate: (data: string) => void
     onExecutionModeChanged: (mode: string) => void
   }
 }

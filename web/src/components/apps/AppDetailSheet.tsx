@@ -15,8 +15,7 @@ import {
   Package,
   HardDrive,
   Info,
-  Shield,
-  AlertTriangle
+  Shield
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 

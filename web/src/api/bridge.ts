@@ -53,11 +53,6 @@ export const bridge = {
       return false
     }
   },
-      return window.NativeBridge.checkRootAccess()
-    } catch {
-      return false
-    }
-  },
 
   // Check Shizuku availability and permission
   checkShizukuAccess: (): { available: boolean; granted: boolean } => {
