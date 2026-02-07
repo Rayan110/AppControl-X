@@ -41,8 +41,8 @@ class MainActivity : AppCompatActivity() {
                 javaScriptEnabled = true
                 domStorageEnabled = true
                 databaseEnabled = true
-                allowFileAccess = false
-                allowContentAccess = false
+                allowFileAccess = true
+                allowContentAccess = true
                 cacheMode = WebSettings.LOAD_DEFAULT
                 mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
                 setSupportZoom(false)
