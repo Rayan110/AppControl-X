@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils'
 interface AppActivities {
   packageName: string
   appName: string
+  iconBase64?: string
   isSystem: boolean
   activities: string[]
 }
@@ -28,7 +29,7 @@ export default function ActivityLauncher() {
   const [apps, setApps] = useState<AppActivities[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [filter, setFilter] = useState<FilterType>('all')
+  const [filter, setFilter] = useState<FilterType>('user')
   const [expandedApps, setExpandedApps] = useState<Set<string>>(new Set())
   const [launchingActivity, setLaunchingActivity] = useState<string | null>(null)
 
@@ -263,8 +264,16 @@ function AppActivityCard({
         onClick={onToggle}
         className="w-full p-4 flex items-center gap-3 text-left hover:bg-surface-hover transition-colors"
       >
-        <div className="w-10 h-10 rounded-xl bg-surface flex items-center justify-center flex-shrink-0">
-          <Package size={20} className="text-text-secondary" />
+        <div className="w-10 h-10 rounded-xl bg-surface flex items-center justify-center flex-shrink-0 overflow-hidden">
+          {app.iconBase64 ? (
+            <img
+              src={`data:image/png;base64,${app.iconBase64}`}
+              alt={app.appName}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <Package size={20} className="text-text-secondary" />
+          )}
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-medium text-text-primary truncate">{app.appName}</p>

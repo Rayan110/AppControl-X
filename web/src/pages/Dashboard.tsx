@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '@/store/appStore'
 import { useThemeStore } from '@/store/themeStore'
@@ -24,7 +24,7 @@ import {
   Clock,
   Moon
 } from 'lucide-react'
-import { cn, formatBytes } from '@/lib/utils'
+import { cn, formatBytes, getMarketingName } from '@/lib/utils'
 import { AreaChart, Area, ResponsiveContainer } from 'recharts'
 
 type ModalType = 'memory' | 'storage' | 'display' | 'battery' | 'network' | null
@@ -32,7 +32,7 @@ type ModalType = 'memory' | 'storage' | 'display' | 'battery' | 'network' | null
 export default function Dashboard() {
   const navigate = useNavigate()
   const { theme } = useThemeStore()
-  const { systemStats, apps, cpuFrequencies } = useAppStore()
+  const { systemStats, apps, cpuFrequencies, cpuTemp: realtimeCpuTemp, gpuTemp: realtimeGpuTemp } = useAppStore()
   const [cpuHistory, setCpuHistory] = useState<{ value: number }[]>([])
   const [openModal, setOpenModal] = useState<ModalType>(null)
 
@@ -45,17 +45,20 @@ export default function Dashboard() {
     }
   }, [systemStats?.cpu?.usagePercent])
 
-  const userApps = apps.filter(app => !app.isSystemApp).length
-  const systemAppsCount = apps.filter(app => app.isSystemApp).length
+  const userApps = useMemo(() => apps.filter(app => !app.isSystemApp).length, [apps])
+  const systemAppsCount = useMemo(() => apps.filter(app => app.isSystemApp).length, [apps])
   const chartColor = theme === 'dark' ? '#8B5CF6' : '#22C55E'
 
   // Use cpuFrequencies from real-time monitor or fallback to systemStats
-  const frequencies = cpuFrequencies.length > 0
-    ? cpuFrequencies
-    : systemStats?.cpu?.coreFrequencies ?? []
+  const frequencies = useMemo(() =>
+    cpuFrequencies.length > 0
+      ? cpuFrequencies
+      : systemStats?.cpu?.coreFrequencies ?? [],
+    [cpuFrequencies, systemStats?.cpu?.coreFrequencies]
+  )
 
-  const cpuTemp = systemStats?.cpu?.temperature ?? null
-  const gpuTemp = systemStats?.gpu?.temperature ?? null
+  const cpuTemp = realtimeCpuTemp ?? systemStats?.cpu?.temperature ?? null
+  const gpuTemp = realtimeGpuTemp ?? systemStats?.gpu?.temperature ?? null
 
   return (
     <PageContainer title="Dashboard">
@@ -365,7 +368,7 @@ function DeviceInfoCard() {
           <div className="flex items-start justify-between">
             <div>
               <h3 className="text-lg font-semibold text-primary">
-                {deviceInfo.model}
+                {getMarketingName(deviceInfo.model)}
               </h3>
               <p className="text-sm text-text-primary">
                 {deviceInfo.processor}

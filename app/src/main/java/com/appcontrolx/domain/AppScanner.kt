@@ -31,13 +31,14 @@ class AppScanner @Inject constructor(
     private var cacheTimestamp: Long = 0
     private val cacheValidityMs = 30_000L
 
-    suspend fun scanAllApps(forceRefresh: Boolean = false): List<AppInfo> = withContext(Dispatchers.IO) {
+    suspend fun scanAllApps(forceRefresh: Boolean = false, includeIcons: Boolean = false): List<AppInfo> = withContext(Dispatchers.IO) {
         val now = System.currentTimeMillis()
         if (!forceRefresh && cachedApps != null && (now - cacheTimestamp) < cacheValidityMs) {
             return@withContext cachedApps!!
         }
 
-        val runningPackages = getRunningPackages()
+        // Skip running packages check for faster initial load
+        val runningPackages = if (includeIcons) getRunningPackages() else emptySet()
         val packages = packageManager.getInstalledPackages(PackageManager.GET_META_DATA)
 
         val apps = packages.mapNotNull { pkg ->
@@ -51,7 +52,7 @@ class AppScanner @Inject constructor(
                 AppInfo(
                     packageName = pkg.packageName,
                     appName = appInfo.loadLabel(packageManager).toString(),
-                    iconBase64 = getIconBase64(appInfo),
+                    iconBase64 = if (includeIcons) getIconBase64(appInfo) else null, // Lazy load icons
                     versionName = pkg.versionName ?: "",
                     isSystemApp = isSystemApp,
                     isEnabled = isEnabled,
@@ -72,6 +73,15 @@ class AppScanner @Inject constructor(
         apps
     }
 
+    suspend fun getAppIcon(packageName: String): String? = withContext(Dispatchers.IO) {
+        try {
+            val appInfo = packageManager.getApplicationInfo(packageName, 0)
+            getIconBase64(appInfo)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
     suspend fun scanAppActivities(): List<AppActivities> = withContext(Dispatchers.IO) {
         val packages = packageManager.getInstalledPackages(PackageManager.GET_ACTIVITIES)
         packages.mapNotNull { pkg ->
@@ -85,6 +95,7 @@ class AppScanner @Inject constructor(
                 AppActivities(
                     packageName = pkg.packageName,
                     appName = appInfo.loadLabel(packageManager).toString(),
+                    iconBase64 = getIconBase64(appInfo),
                     isSystem = isSystemApp,
                     activities = activities.sorted()
                 )

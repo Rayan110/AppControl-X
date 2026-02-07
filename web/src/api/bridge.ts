@@ -4,6 +4,7 @@ import type {
   AppAction,
   ActionResult,
   SystemStats,
+  RealtimeStatus,
   ActionLog,
   AppFilter,
   DeviceInfo
@@ -52,6 +53,11 @@ export const bridge = {
       return false
     }
   },
+      return window.NativeBridge.checkRootAccess()
+    } catch {
+      return false
+    }
+  },
 
   // Check Shizuku availability and permission
   checkShizukuAccess: (): { available: boolean; granted: boolean } => {
@@ -87,6 +93,18 @@ export const bridge = {
     return callNative<AppInfo[]>(() =>
       window.NativeBridge.getAppList(JSON.stringify(filter ?? {}))
     )
+  },
+
+  getAppIcon: (packageName: string): string | null => {
+    if (!isNativeBridgeAvailable()) return null
+    try {
+      const result = callNative<{ packageName: string; iconBase64: string | null }>(() =>
+        window.NativeBridge.getAppIcon(packageName)
+      )
+      return result.iconBase64
+    } catch {
+      return null
+    }
   },
 
   getAppDetail: (packageName: string): AppInfo | null => {
@@ -182,28 +200,28 @@ export const bridge = {
     window.NativeBridge.stopSystemMonitor()
   },
 
-  // Start CPU frequency monitor with faster interval
-  startCpuMonitor: (
+  // Start Realtime status monitor (CPU, Temps)
+  startRealtimeMonitor: (
     intervalMs: number,
-    onUpdate: (frequencies: number[]) => void
+    onUpdate: (status: RealtimeStatus) => void
   ): void => {
     if (!isNativeBridgeAvailable()) return
 
-    window.onCpuFrequencyUpdate = (data: string) => {
+    window.onRealtimeStatusUpdate = (data: string) => {
       try {
-        const frequencies = JSON.parse(data) as number[]
-        onUpdate(frequencies)
+        const status = JSON.parse(data) as RealtimeStatus
+        onUpdate(status)
       } catch (error) {
-        console.error('CPU frequency parse error:', error)
+        console.error('Realtime status parse error:', error)
       }
     }
 
-    window.NativeBridge.startCpuMonitor(intervalMs)
+    window.NativeBridge.startRealtimeMonitor(intervalMs)
   },
 
-  stopCpuMonitor: (): void => {
+  stopRealtimeMonitor: (): void => {
     if (!isNativeBridgeAvailable()) return
-    window.NativeBridge.stopCpuMonitor()
+    window.NativeBridge.stopRealtimeMonitor()
   },
 
   getActionHistory: (): ActionLog[] => {

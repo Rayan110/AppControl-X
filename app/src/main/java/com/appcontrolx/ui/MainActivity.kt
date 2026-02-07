@@ -94,6 +94,26 @@ class MainActivity : AppCompatActivity() {
                     return assetLoader.shouldInterceptRequest(request.url)
                 }
 
+                override fun shouldOverrideUrlLoading(
+                    view: WebView?,
+                    request: WebResourceRequest?
+                ): Boolean {
+                    val url = request?.url?.toString() ?: return false
+                    // Allow internal asset URLs to load in WebView
+                    if (url.startsWith("https://appassets.androidplatform.net")) {
+                        return false
+                    }
+
+                    // Open all other URLs (external links) in the system browser
+                    try {
+                        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url))
+                        startActivity(intent)
+                    } catch (e: Exception) {
+                        Log.e("WebView", "Could not open external link", e)
+                    }
+                    return true
+                }
+
                 override fun onReceivedSslError(
                     view: WebView?,
                     handler: SslErrorHandler?,

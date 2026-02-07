@@ -94,6 +94,14 @@ class SystemMonitor @Inject constructor(
         }
     }
 
+    fun getRealtimeStatus(): RealtimeStatus {
+        return RealtimeStatus(
+            cpuFrequencies = getCoreFrequencies(),
+            cpuTemp = getCpuTemperature(),
+            gpuTemp = getGpuTemperature()
+        )
+    }
+
     fun getCoreFrequencies(): List<Long> {
         return try {
             val cores = Runtime.getRuntime().availableProcessors()

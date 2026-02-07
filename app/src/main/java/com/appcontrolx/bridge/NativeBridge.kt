@@ -17,6 +17,7 @@ import com.appcontrolx.domain.SystemMonitor
 import com.appcontrolx.model.AppAction
 import com.appcontrolx.model.BatchComplete
 import com.appcontrolx.model.BatchProgress
+import com.appcontrolx.model.RealtimeStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -43,7 +44,7 @@ class NativeBridge @Inject constructor(
     private val mainHandler = Handler(Looper.getMainLooper())
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var monitorJob: Job? = null
-    private var cpuMonitorJob: Job? = null
+    private var realtimeMonitorJob: Job? = null
     private var webView: WebView? = null
 
     fun setWebView(webView: WebView) {
@@ -76,8 +77,16 @@ class NativeBridge @Inject constructor(
     @JavascriptInterface
     fun getAppList(@Suppress("UNUSED_PARAMETER") filterJson: String): String {
         return runBlocking {
-            val apps = appScanner.scanAllApps()
+            val apps = appScanner.scanAllApps(includeIcons = false) // Fast load without icons
             json.encodeToString(apps)
+        }
+    }
+
+    @JavascriptInterface
+    fun getAppIcon(packageName: String): String {
+        return runBlocking {
+            val icon = appScanner.getAppIcon(packageName)
+            json.encodeToString(mapOf("packageName" to packageName, "iconBase64" to icon))
         }
     }
 
@@ -181,14 +190,14 @@ class NativeBridge @Inject constructor(
     }
 
     @JavascriptInterface
-    fun startCpuMonitor(intervalMs: Int) {
-        cpuMonitorJob?.cancel()
-        cpuMonitorJob = scope.launch {
+    fun startRealtimeMonitor(intervalMs: Int) {
+        realtimeMonitorJob?.cancel()
+        realtimeMonitorJob = scope.launch {
             while (isActive) {
-                val frequencies = systemMonitor.getCoreFrequencies()
-                val freqJson = json.encodeToString(frequencies)
+                val status = systemMonitor.getRealtimeStatus()
+                val statusJson = json.encodeToString(status)
                 mainHandler.post {
-                    webView?.evaluateJavascript("window.onCpuFrequencyUpdate('$freqJson')", null)
+                    webView?.evaluateJavascript("window.onRealtimeStatusUpdate('$statusJson')", null)
                 }
                 delay(intervalMs.toLong())
             }
@@ -196,9 +205,9 @@ class NativeBridge @Inject constructor(
     }
 
     @JavascriptInterface
-    fun stopCpuMonitor() {
-        cpuMonitorJob?.cancel()
-        cpuMonitorJob = null
+    fun stopRealtimeMonitor() {
+        realtimeMonitorJob?.cancel()
+        realtimeMonitorJob = null
     }
 
     @JavascriptInterface
@@ -314,7 +323,7 @@ class NativeBridge @Inject constructor(
 
     fun cleanup() {
         monitorJob?.cancel()
-        cpuMonitorJob?.cancel()
+        realtimeMonitorJob?.cancel()
         scope.cancel()
         shellManager.cleanup()
     }

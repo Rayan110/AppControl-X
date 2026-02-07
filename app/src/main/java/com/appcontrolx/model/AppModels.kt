@@ -43,6 +43,7 @@ enum class AppAction {
 data class AppActivities(
     val packageName: String,
     val appName: String,
+    val iconBase64: String?,
     val isSystem: Boolean,
     val activities: List<String>
 )

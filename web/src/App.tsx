@@ -1,15 +1,18 @@
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useEffect, lazy, Suspense } from 'react'
 import { useAppStore } from '@/store/appStore'
 import { useThemeStore } from '@/store/themeStore'
 import Layout from '@/components/layout/Layout'
 import Dashboard from '@/pages/Dashboard'
-import AppList from '@/pages/AppList'
-import Tools from '@/pages/Tools'
-import ActivityLauncher from '@/pages/ActivityLauncher'
-import Settings from '@/pages/Settings'
-import About from '@/pages/About'
-import Setup from '@/pages/Setup'
+import { SkeletonPage } from '@/components/ui/Skeleton'
+
+// Lazy load non-critical pages
+const AppList = lazy(() => import('@/pages/AppList'))
+const Tools = lazy(() => import('@/pages/Tools'))
+const ActivityLauncher = lazy(() => import('@/pages/ActivityLauncher'))
+const Settings = lazy(() => import('@/pages/Settings'))
+const About = lazy(() => import('@/pages/About'))
+const Setup = lazy(() => import('@/pages/Setup'))
 
 function AppRoutes() {
   const { isFirstLaunch } = useThemeStore()
@@ -17,25 +20,29 @@ function AppRoutes() {
   // Show setup for first launch
   if (isFirstLaunch) {
     return (
-      <Routes>
-        <Route path="/setup" element={<Setup />} />
-        <Route path="*" element={<Navigate to="/setup" replace />} />
-      </Routes>
+      <Suspense fallback={<SkeletonPage />}>
+        <Routes>
+          <Route path="/setup" element={<Setup />} />
+          <Route path="*" element={<Navigate to="/setup" replace />} />
+        </Routes>
+      </Suspense>
     )
   }
 
   return (
     <Layout>
-      <Routes>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/tools" element={<Tools />} />
-        <Route path="/apps" element={<AppList />} />
-        <Route path="/activity-launcher" element={<ActivityLauncher />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/setup" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
+      <Suspense fallback={<SkeletonPage />}>
+        <Routes>
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/tools" element={<Tools />} />
+          <Route path="/apps" element={<AppList />} />
+          <Route path="/activity-launcher" element={<ActivityLauncher />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/setup" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </Suspense>
     </Layout>
   )
 }

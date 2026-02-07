@@ -49,3 +49,17 @@ export function SkeletonStats() {
     </div>
   )
 }
+
+export function SkeletonPage() {
+  return (
+    <div className="flex-1 overflow-auto p-4 space-y-4">
+      <Skeleton className="h-8 w-48 mb-6" />
+      <SkeletonStats />
+      <div className="space-y-3 mt-6">
+        {[1, 2, 3].map(i => (
+          <SkeletonCard key={i} />
+        ))}
+      </div>
+    </div>
+  )
+}

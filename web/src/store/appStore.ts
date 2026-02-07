@@ -13,9 +13,12 @@ interface AppState {
   executionMode: ExecutionMode
   isLoading: boolean
   apps: AppInfo[]
+  appIcons: Record<string, string | null> // Icon cache
   systemStats: SystemStats | null
   deviceInfo: DeviceInfo | null
   cpuFrequencies: number[]
+  cpuTemp: number | null
+  gpuTemp: number | null
   filter: AppFilter
   selectedApps: Set<string>
   isSelectionMode: boolean
@@ -25,6 +28,7 @@ interface AppState {
   detectExecutionMode: () => void
   setExecutionMode: (mode: ExecutionMode) => void
   refreshApps: () => void
+  loadAppIcon: (packageName: string) => Promise<void>
   refreshSystemStats: () => void
   refreshDeviceInfo: () => void
   setFilter: (filter: Partial<AppFilter>) => void
@@ -128,9 +132,12 @@ export const useAppStore = create<AppState>((set, get) => ({
   executionMode: 'NONE',
   isLoading: false,
   apps: [],
+  appIcons: {},
   systemStats: null,
   deviceInfo: null,
   cpuFrequencies: [],
+  cpuTemp: null,
+  gpuTemp: null,
   filter: defaultFilter,
   selectedApps: new Set(),
   isSelectionMode: false,
@@ -140,26 +147,32 @@ export const useAppStore = create<AppState>((set, get) => ({
     // Detect execution mode (root/shizuku) at startup
     get().detectExecutionMode()
 
-    // Refresh apps and system stats
-    get().refreshApps()
-    get().refreshSystemStats()
-    get().refreshDeviceInfo()
+    // Load apps IMMEDIATELY without waiting - async in background
+    setTimeout(() => get().refreshApps(), 0)
 
-    // Start system monitor with 2 second interval
-    bridge.startSystemMonitor(2000, (stats) => {
+    // Load system stats in parallel - faster than sequential
+    Promise.all([
+      get().refreshSystemStats(),
+      get().refreshDeviceInfo()
+    ])
+
+    // Start real-time monitors - SUPER FAST!
+    bridge.startSystemMonitor(300, (stats) => { // 300ms instead of 2s
       set({ systemStats: stats })
     })
 
-    // Start CPU frequency monitor with 400ms interval for real-time display
-    bridge.startCpuMonitor(400, (frequencies) => {
-      set({ cpuFrequencies: frequencies })
+    bridge.startRealtimeMonitor(200, (status) => { // 200ms for CPU/temps
+      set({
+        cpuFrequencies: status.cpuFrequencies,
+        cpuTemp: status.cpuTemp,
+        gpuTemp: status.gpuTemp
+      })
     })
 
     // Listen for execution mode changes (access loss detection)
     bridge.onExecutionModeChanged((mode) => {
       const currentMode = get().executionMode
       if (currentMode !== 'NONE' && mode === 'NONE') {
-        // Access was lost
         set({ executionMode: mode, accessLost: true })
       } else {
         set({ executionMode: mode })
@@ -211,6 +224,18 @@ export const useAppStore = create<AppState>((set, get) => ({
       set({ apps, isLoading: false })
     } catch {
       set({ isLoading: false })
+    }
+  },
+
+  loadAppIcon: async (packageName: string) => {
+    const { appIcons } = get()
+    if (appIcons[packageName] !== undefined) return // Already loaded or loading
+
+    set({ appIcons: { ...appIcons, [packageName]: null } }) // Mark as loading
+
+    const icon = bridge.getAppIcon(packageName)
+    if (icon) {
+      set({ appIcons: { ...get().appIcons, [packageName]: icon } })
     }
   },
 

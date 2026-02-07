@@ -1,7 +1,9 @@
 import { useState, useMemo } from 'react'
 import { useAppStore } from '@/store/appStore'
+import { useDebounce } from '@/hooks/useDebounce'
 import PageContainer from '@/components/layout/PageContainer'
 import AppDetailSheet from '@/components/apps/AppDetailSheet'
+import LazyAppIcon from '@/components/apps/LazyAppIcon'
 import { SkeletonAppItem } from '@/components/ui/Skeleton'
 import {
   Search,
@@ -33,7 +35,8 @@ export default function AppList() {
   } = useAppStore()
 
   const [searchQuery, setSearchQuery] = useState('')
-  const [activeTab, setActiveTab] = useState<FilterTab>('all')
+  const debouncedSearch = useDebounce(searchQuery, 150) // Debounced search
+  const [activeTab, setActiveTab] = useState<FilterTab>('user')
   const [selectedApp, setSelectedApp] = useState<AppInfo | null>(null)
   const [isDetailOpen, setIsDetailOpen] = useState(false)
 
@@ -46,9 +49,9 @@ export default function AppList() {
 
   const filteredApps = useMemo(() => {
     return apps.filter(app => {
-      // Search filter
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase()
+      // Search filter - use debounced value
+      if (debouncedSearch) {
+        const query = debouncedSearch.toLowerCase()
         if (
           !app.appName.toLowerCase().includes(query) &&
           !app.packageName.toLowerCase().includes(query)
@@ -70,9 +73,9 @@ export default function AppList() {
           return true
       }
     })
-  }, [apps, activeTab, searchQuery])
+  }, [apps, activeTab, debouncedSearch])
 
-  // Count apps by category
+  // Count apps by category - memoized for performance
   const counts = useMemo(() => ({
     all: apps.length,
     user: apps.filter(a => !a.isSystemApp).length,
@@ -382,19 +385,13 @@ function AppItem({ app, isSelected, isSelectionMode, onSelect, onClick, index }:
       )}
 
       {/* App Icon */}
-      <div className="w-12 h-12 rounded-xl bg-surface flex items-center justify-center flex-shrink-0 overflow-hidden">
-        {app.iconBase64 ? (
-          <img
-            src={`data:image/png;base64,${app.iconBase64}`}
-            alt={app.appName}
-            className="w-10 h-10 rounded-lg"
-          />
-        ) : (
-          <span className="text-lg font-bold text-text-muted">
-            {app.appName.charAt(0).toUpperCase()}
-          </span>
-        )}
-      </div>
+      <LazyAppIcon
+        packageName={app.packageName}
+        iconBase64={app.iconBase64}
+        appName={app.appName}
+        size={48}
+        className="flex-shrink-0"
+      />
 
       {/* App Info */}
       <div className="flex-1 min-w-0">

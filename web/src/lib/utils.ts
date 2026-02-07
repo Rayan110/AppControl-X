@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
+import { deviceModels } from '@/data/deviceModels'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -26,4 +27,29 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
     if (timeout) clearTimeout(timeout)
     timeout = setTimeout(() => func(...args), wait)
   }
+}
+
+/**
+ * Gets the marketing name for a device model code.
+ * Falls back to the original model code if no mapping is found.
+ */
+export function getMarketingName(model: string): string {
+  if (!model) return model
+  
+  // Try exact match
+  if (deviceModels[model]) {
+    return deviceModels[model]
+  }
+
+  // Some models might be "BRAND MODEL_CODE" or have extra info
+  // Try to find the code within the string
+  // We sort by length descending to match the most specific code first
+  const codes = Object.keys(deviceModels).sort((a, b) => b.length - a.length)
+  for (const code of codes) {
+    if (model.includes(code)) {
+      return deviceModels[code]
+    }
+  }
+
+  return model
 }

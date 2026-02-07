@@ -114,6 +114,12 @@ export interface DeviceInfo {
   deepSleepPercent: number
 }
 
+export interface RealtimeStatus {
+  cpuFrequencies: number[]
+  cpuTemp: number | null
+  gpuTemp: number | null
+}
+
 export interface ActionResult {
   success: boolean
   message: string

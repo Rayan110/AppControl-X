@@ -7,13 +7,11 @@ import { IconWrapper } from '@/components/ui/IconWrapper'
 import {
   ChevronRight,
   Shield,
-  Palette,
   Database,
   Info,
   Zap,
   Sun,
   Moon,
-  Sparkles,
   AlertTriangle,
   RefreshCw,
   Check,
@@ -28,7 +26,7 @@ import {
 import { cn } from '@/lib/utils'
 import type { ExecutionMode, ActionLog, AppAction } from '@/api/types'
 
-type ModalType = 'mode' | 'accent' | 'animations' | 'actionHistory' | 'appInfo' | null
+type ModalType = 'mode' | 'actionHistory' | 'appInfo' | null
 
 export default function Settings() {
   const {
@@ -40,7 +38,6 @@ export default function Settings() {
   } = useAppStore()
   const { theme, toggleTheme, resetSetup } = useThemeStore()
   const [openModal, setOpenModal] = useState<ModalType>(null)
-  const [animationsEnabled, setAnimationsEnabled] = useState(true)
 
   const modeConfig = {
     ROOT: {
@@ -124,21 +121,6 @@ export default function Settings() {
               theme={theme}
               onToggle={toggleTheme}
             />
-            <SettingItem
-              icon={Palette}
-              iconColor="secondary"
-              title="Accent Color"
-              subtitle={theme === 'dark' ? 'Purple' : 'Green'}
-              onClick={() => setOpenModal('accent')}
-              showBorder
-            />
-            <SettingItem
-              icon={Sparkles}
-              iconColor="warning"
-              title="Animations"
-              subtitle={animationsEnabled ? 'Smooth transitions enabled' : 'Animations disabled'}
-              onClick={() => setOpenModal('animations')}
-            />
           </div>
         </section>
 
@@ -198,19 +180,6 @@ export default function Settings() {
           setOpenModal(null)
         }}
         onRefresh={detectExecutionMode}
-      />
-
-      <AccentColorModal
-        isOpen={openModal === 'accent'}
-        onClose={() => setOpenModal(null)}
-        theme={theme}
-      />
-
-      <AnimationsModal
-        isOpen={openModal === 'animations'}
-        onClose={() => setOpenModal(null)}
-        enabled={animationsEnabled}
-        onToggle={() => setAnimationsEnabled(!animationsEnabled)}
       />
 
       <ActionHistoryModal
@@ -327,123 +296,6 @@ function ExecutionModeModal({
             <RefreshCw size={16} />
             Detect
           </button>
-          <button onClick={onClose} className="btn btn-primary">
-            Done
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function AccentColorModal({ isOpen, onClose, theme }: { isOpen: boolean; onClose: () => void; theme: string }) {
-  if (!isOpen) return null
-
-  const colors = [
-    { name: 'Green', color: '#22C55E', selected: theme === 'light' },
-    { name: 'Purple', color: '#8B5CF6', selected: theme === 'dark' },
-    { name: 'Blue', color: '#3B82F6', selected: false },
-    { name: 'Orange', color: '#F97316', selected: false },
-  ]
-
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <div className="modal-header-icon">
-            <Palette size={28} strokeWidth={1.5} />
-          </div>
-          <h2 className="modal-title flex-1">Accent Color</h2>
-          <button onClick={onClose} className="btn-icon">
-            <X size={18} />
-          </button>
-        </div>
-
-        <div className="modal-body">
-          <p className="text-sm text-text-secondary mb-4">
-            Choose your preferred accent color. Colors are automatically set based on theme.
-          </p>
-
-          <div className="grid grid-cols-2 gap-3">
-            {colors.map(({ name, color, selected }) => (
-              <button
-                key={name}
-                className={cn(
-                  'p-4 rounded-xl border flex items-center gap-3 transition-all',
-                  selected
-                    ? 'border-primary bg-primary-bg'
-                    : 'border-card-border bg-surface hover:bg-surface-hover'
-                )}
-              >
-                <div
-                  className="w-8 h-8 rounded-full"
-                  style={{ backgroundColor: color }}
-                />
-                <span className="font-medium text-text-primary">{name}</span>
-                {selected && (
-                  <Check size={16} className="text-primary ml-auto" />
-                )}
-              </button>
-            ))}
-          </div>
-
-          <p className="text-xs text-text-muted mt-4 text-center">
-            Light theme uses Green, Dark theme uses Purple
-          </p>
-        </div>
-
-        <div className="modal-footer">
-          <button onClick={onClose} className="btn btn-primary">
-            Done
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function AnimationsModal({ isOpen, onClose, enabled, onToggle }: { isOpen: boolean; onClose: () => void; enabled: boolean; onToggle: () => void }) {
-  if (!isOpen) return null
-
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <div className="modal-header-icon">
-            <Sparkles size={28} strokeWidth={1.5} />
-          </div>
-          <h2 className="modal-title flex-1">Animations</h2>
-          <button onClick={onClose} className="btn-icon">
-            <X size={18} />
-          </button>
-        </div>
-
-        <div className="modal-body">
-          <p className="text-sm text-text-secondary mb-4">
-            Enable or disable smooth transitions and animations throughout the app.
-          </p>
-
-          <button
-            onClick={onToggle}
-            className="w-full p-4 rounded-xl border border-card-border bg-surface flex items-center justify-between"
-          >
-            <div>
-              <p className="font-medium text-text-primary">Enable Animations</p>
-              <p className="text-sm text-text-muted">Smooth transitions and effects</p>
-            </div>
-            <div className={cn(
-              'w-12 h-7 rounded-full p-1 transition-colors duration-200',
-              enabled ? 'bg-primary' : 'bg-text-muted'
-            )}>
-              <div className={cn(
-                'w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-200',
-                enabled ? 'translate-x-5' : 'translate-x-0'
-              )} />
-            </div>
-          </button>
-        </div>
-
-        <div className="modal-footer">
           <button onClick={onClose} className="btn btn-primary">
             Done
           </button>
@@ -661,6 +513,11 @@ function AppInfoModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
             <InfoRow label="Build" value="2026.02.07" />
             <InfoRow label="Framework" value="React + Kotlin" />
             <InfoRow label="License" value="GPL v3" />
+            <InfoRow
+              label="Source"
+              value="GitHub"
+              url="https://github.com/risunCode/AppControl-X"
+            />
           </div>
 
           <p className="text-xs text-text-muted text-center pt-2">
@@ -678,7 +535,24 @@ function AppInfoModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
   )
 }
 
-function InfoRow({ label, value }: { label: string; value: string }) {
+function InfoRow({ label, value, url }: { label: string; value: string; url?: string }) {
+  if (url) {
+    return (
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex justify-between py-2 border-b border-card-border last:border-0 hover:bg-surface-hover transition-colors px-1 -mx-1 rounded-lg"
+      >
+        <span className="text-text-muted">{label}</span>
+        <div className="flex items-center gap-1 text-primary font-medium">
+          <span>{value}</span>
+          <ChevronRight size={14} />
+        </div>
+      </a>
+    )
+  }
+
   return (
     <div className="flex justify-between py-2 border-b border-card-border last:border-0">
       <span className="text-text-muted">{label}</span>

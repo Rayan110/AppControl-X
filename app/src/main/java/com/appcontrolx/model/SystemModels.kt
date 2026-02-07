@@ -3,6 +3,22 @@ package com.appcontrolx.model
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class AppInfo(
+    val packageName: String,
+    val appName: String,
+    val iconBase64: String? = null, // Nullable for lazy loading
+    val versionName: String,
+    val isSystemApp: Boolean,
+    val isEnabled: Boolean,
+    val isRunning: Boolean,
+    val isFrozen: Boolean,
+    val isBackgroundRestricted: Boolean,
+    val size: Long,
+    val uid: Int,
+    val safetyLevel: SafetyLevel
+)
+
+@Serializable
 data class SystemStats(
     val cpu: CpuStats,
     val gpu: GpuStats,
@@ -106,4 +122,11 @@ data class DeviceInfo(
     val uptime: String,
     val deepSleep: String,
     val deepSleepPercent: Int
+)
+
+@Serializable
+data class RealtimeStatus(
+    val cpuFrequencies: List<Long>,
+    val cpuTemp: Float?,
+    val gpuTemp: Float?
 )
