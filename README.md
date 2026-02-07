@@ -15,11 +15,24 @@ A powerful Android app control utility built with Kotlin + React hybrid architec
 
 ## Screenshots
 
-### Light Theme (Solarized)
-Beautiful cream-colored theme with green accents.
-
-### Dark Theme
-Premium dark mode with purple accents and glassmorphism.
+<table>
+  <tr>
+    <td align="center"><b>Home</b></td>
+    <td align="center"><b>Tools</b></td>
+  </tr>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/87a407ec-920d-4254-b52b-a29bc641e7ff" width="300"/></td>
+    <td><img src="https://github.com/user-attachments/assets/a245fa13-b4f5-4385-a733-daa96e9468e3" width="300"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Settings</b></td>
+    <td align="center"><b>About</b></td>
+  </tr>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/dee81f94-cb59-4814-a418-86da01bb9897" width="300"/></td>
+    <td><img src="https://github.com/user-attachments/assets/8ffb536e-b87e-44f7-ab45-9b60ada48e39" width="300"/></td>
+  </tr>
+</table>
 
 ## Architecture
 
