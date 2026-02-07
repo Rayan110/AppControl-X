@@ -26,7 +26,6 @@ import {
 } from 'lucide-react'
 import { cn, formatBytes } from '@/lib/utils'
 import { AreaChart, Area, ResponsiveContainer } from 'recharts'
-import { ROUTES } from '@/lib/constants'
 
 type ModalType = 'memory' | 'storage' | 'display' | 'battery' | 'network' | null
 
@@ -194,7 +193,7 @@ export default function Dashboard() {
             title="Apps"
             icon={AppWindow}
             delay={4}
-            onClick={() => navigate(ROUTES.APPS)}
+            onClick={() => navigate('/apps')}
           >
             <div className="flex items-center gap-3">
               <div>

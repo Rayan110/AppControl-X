@@ -5,6 +5,8 @@ import { useThemeStore } from '@/store/themeStore'
 import Layout from '@/components/layout/Layout'
 import Dashboard from '@/pages/Dashboard'
 import AppList from '@/pages/AppList'
+import Tools from '@/pages/Tools'
+import ActivityLauncher from '@/pages/ActivityLauncher'
 import Settings from '@/pages/Settings'
 import About from '@/pages/About'
 import Setup from '@/pages/Setup'
@@ -27,7 +29,9 @@ function AppRoutes() {
       <Routes>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/tools" element={<Tools />} />
         <Route path="/apps" element={<AppList />} />
+        <Route path="/activity-launcher" element={<ActivityLauncher />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/about" element={<About />} />
         <Route path="/setup" element={<Navigate to="/dashboard" replace />} />

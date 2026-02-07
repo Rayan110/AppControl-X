@@ -10,6 +10,7 @@ import android.graphics.drawable.Drawable
 import android.os.Build
 import android.util.Base64
 import com.appcontrolx.core.ShellManager
+import com.appcontrolx.model.AppActivities
 import com.appcontrolx.model.AppInfo
 import com.appcontrolx.model.ExecutionMode
 import kotlinx.coroutines.Dispatchers
@@ -69,6 +70,28 @@ class AppScanner @Inject constructor(
         cachedApps = apps
         cacheTimestamp = now
         apps
+    }
+
+    suspend fun scanAppActivities(): List<AppActivities> = withContext(Dispatchers.IO) {
+        val packages = packageManager.getInstalledPackages(PackageManager.GET_ACTIVITIES)
+        packages.mapNotNull { pkg ->
+            try {
+                val activities = pkg.activities?.map { it.name } ?: return@mapNotNull null
+                if (activities.isEmpty()) return@mapNotNull null
+
+                val appInfo = pkg.applicationInfo
+                val isSystemApp = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
+
+                AppActivities(
+                    packageName = pkg.packageName,
+                    appName = appInfo.loadLabel(packageManager).toString(),
+                    isSystem = isSystemApp,
+                    activities = activities.sorted()
+                )
+            } catch (e: Exception) {
+                null
+            }
+        }.sortedBy { it.appName.lowercase() }
     }
 
     fun invalidateCache() {

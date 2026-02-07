@@ -18,6 +18,12 @@ interface NativeBridgeInterface {
   stopCpuMonitor(): void
   getActionHistory(): string
   getSafetyStatus(packageName: string): string
+  // Tools & Activity Launcher
+  openHiddenSetting(intents: string): boolean
+  getActivities(): string
+  launchActivity(packageName: string, activityName: string): boolean
+  launchApp(packageName: string): boolean
+  openAppSettings(packageName: string): boolean
 }
 
 declare global {

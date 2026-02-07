@@ -1,8 +1,12 @@
 package com.appcontrolx.bridge
 
+import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import com.appcontrolx.core.ShellManager
@@ -216,6 +220,85 @@ class NativeBridge @Inject constructor(
     @JavascriptInterface
     fun checkRootAccess(): Boolean {
         return shellManager.getMode().name == "ROOT"
+    }
+
+    @JavascriptInterface
+    fun openHiddenSetting(intentsJson: String): Boolean {
+        return try {
+            val intents = json.decodeFromString<List<String>>(intentsJson)
+            var success = false
+            for (intentStr in intents) {
+                try {
+                    val parts = intentStr.split("/")
+                    if (parts.size == 2) {
+                        val intent = Intent().apply {
+                            component = ComponentName(parts[0], parts[1])
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        }
+                        context.startActivity(intent)
+                        success = true
+                        break
+                    }
+                } catch (e: Exception) {
+                    continue
+                }
+            }
+            success
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    @JavascriptInterface
+    fun getActivities(): String {
+        return runBlocking {
+            val activities = appScanner.scanAppActivities()
+            json.encodeToString(activities)
+        }
+    }
+
+    @JavascriptInterface
+    fun launchActivity(packageName: String, activityName: String): Boolean {
+        return try {
+            val intent = Intent().apply {
+                component = ComponentName(packageName, activityName)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            context.startActivity(intent)
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    @JavascriptInterface
+    fun launchApp(packageName: String): Boolean {
+        return try {
+            val intent = context.packageManager.getLaunchIntentForPackage(packageName)
+            if (intent != null) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
+                true
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    @JavascriptInterface
+    fun openAppSettings(packageName: String): Boolean {
+        return try {
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.fromParts("package", packageName, null)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            context.startActivity(intent)
+            true
+        } catch (e: Exception) {
+            false
+        }
     }
 
     private fun sendCallback(callbackId: String, data: String) {

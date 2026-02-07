@@ -3,7 +3,7 @@ export const APP_NAME = 'AppControlX'
 
 export const ROUTES = {
   DASHBOARD: '/dashboard',
-  APPS: '/apps',
+  TOOLS: '/tools',
   SETTINGS: '/settings',
   ABOUT: '/about'
 } as const

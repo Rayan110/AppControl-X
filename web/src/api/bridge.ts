@@ -217,5 +217,51 @@ export const bridge = {
     window.onExecutionModeChanged = (mode: string) => {
       callback(mode as ExecutionMode)
     }
+  },
+
+  // Open hidden settings by trying multiple intents
+  openHiddenSetting: async (intents: string[]): Promise<boolean> => {
+    if (!isNativeBridgeAvailable()) return false
+    try {
+      return window.NativeBridge.openHiddenSetting(JSON.stringify(intents))
+    } catch {
+      return false
+    }
+  },
+
+  // Get all activities from installed apps
+  getActivities: (): { packageName: string; appName: string; isSystem: boolean; activities: string[] }[] => {
+    if (!isNativeBridgeAvailable()) return []
+    return callNative(() => window.NativeBridge.getActivities())
+  },
+
+  // Launch a specific activity
+  launchActivity: (packageName: string, activityName: string): boolean => {
+    if (!isNativeBridgeAvailable()) return false
+    try {
+      return window.NativeBridge.launchActivity(packageName, activityName)
+    } catch {
+      return false
+    }
+  },
+
+  // Launch an app by package name
+  launchApp: (packageName: string): boolean => {
+    if (!isNativeBridgeAvailable()) return false
+    try {
+      return window.NativeBridge.launchApp(packageName)
+    } catch {
+      return false
+    }
+  },
+
+  // Open app settings page
+  openAppSettings: (packageName: string): boolean => {
+    if (!isNativeBridgeAvailable()) return false
+    try {
+      return window.NativeBridge.openAppSettings(packageName)
+    } catch {
+      return false
+    }
   }
 }

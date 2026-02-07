@@ -1,11 +1,11 @@
 import { useLocation, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, AppWindow, Settings, Info } from 'lucide-react'
+import { LayoutDashboard, Wrench, Settings, Info } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ROUTES } from '@/lib/constants'
 
 const navItems = [
   { path: ROUTES.DASHBOARD, icon: LayoutDashboard, label: 'Home' },
-  { path: ROUTES.APPS, icon: AppWindow, label: 'Apps' },
+  { path: ROUTES.TOOLS, icon: Wrench, label: 'Tools' },
   { path: ROUTES.SETTINGS, icon: Settings, label: 'Settings' },
   { path: ROUTES.ABOUT, icon: Info, label: 'About' }
 ]
@@ -18,7 +18,8 @@ export default function BottomNav() {
     <nav className="floating-dock z-50">
       <div className="flex justify-around items-center h-16 px-2">
         {navItems.map(({ path, icon: Icon, label }) => {
-          const isActive = location.pathname === path
+          const isActive = location.pathname === path ||
+            (path === ROUTES.TOOLS && location.pathname === '/apps')
           return (
             <button
               key={path}

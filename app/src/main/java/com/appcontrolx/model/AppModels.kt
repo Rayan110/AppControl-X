@@ -40,6 +40,14 @@ enum class AppAction {
 }
 
 @Serializable
+data class AppActivities(
+    val packageName: String,
+    val appName: String,
+    val isSystem: Boolean,
+    val activities: List<String>
+)
+
+@Serializable
 data class AppInfo(
     val packageName: String,
     val appName: String,

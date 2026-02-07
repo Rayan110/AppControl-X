@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useAppStore } from '@/store/appStore'
 import PageContainer from '@/components/layout/PageContainer'
+import AppDetailSheet from '@/components/apps/AppDetailSheet'
 import { SkeletonAppItem } from '@/components/ui/Skeleton'
 import {
   Search,
@@ -33,6 +34,15 @@ export default function AppList() {
 
   const [searchQuery, setSearchQuery] = useState('')
   const [activeTab, setActiveTab] = useState<FilterTab>('all')
+  const [selectedApp, setSelectedApp] = useState<AppInfo | null>(null)
+  const [isDetailOpen, setIsDetailOpen] = useState(false)
+
+  const handleAppClick = (app: AppInfo) => {
+    if (!isSelectionMode) {
+      setSelectedApp(app)
+      setIsDetailOpen(true)
+    }
+  }
 
   const filteredApps = useMemo(() => {
     return apps.filter(app => {
@@ -227,11 +237,19 @@ export default function AppList() {
               isSelected={selectedApps.has(app.packageName)}
               isSelectionMode={isSelectionMode}
               onSelect={() => toggleAppSelection(app.packageName)}
+              onClick={() => handleAppClick(app)}
               index={index}
             />
           ))}
         </div>
       )}
+
+      {/* App Detail Sheet */}
+      <AppDetailSheet
+        isOpen={isDetailOpen}
+        onClose={() => setIsDetailOpen(false)}
+        app={selectedApp}
+      />
     </PageContainer>
   )
 }
@@ -323,19 +341,28 @@ interface AppItemProps {
   isSelected: boolean
   isSelectionMode: boolean
   onSelect: () => void
+  onClick: () => void
   index: number
 }
 
-function AppItem({ app, isSelected, isSelectionMode, onSelect, index }: AppItemProps) {
+function AppItem({ app, isSelected, isSelectionMode, onSelect, onClick, index }: AppItemProps) {
+  const handleClick = () => {
+    if (isSelectionMode) {
+      onSelect()
+    } else {
+      onClick()
+    }
+  }
+
   return (
     <div
-      onClick={isSelectionMode ? onSelect : undefined}
+      onClick={handleClick}
       className={cn(
-        'card p-3 flex items-center gap-3',
+        'card p-3 flex items-center gap-3 cursor-pointer',
         'animate-fade-in-up',
         isSelected && 'ring-2 ring-primary border-primary/30',
         !app.isEnabled && 'opacity-60',
-        isSelectionMode && 'cursor-pointer active:scale-[0.98]'
+        'active:scale-[0.98]'
       )}
       style={{ animationDelay: `${Math.min(index * 20, 200)}ms` }}
     >
