@@ -74,7 +74,7 @@ class NativeBridge @Inject constructor(
     }
 
     @JavascriptInterface
-    fun getAppList(filterJson: String): String {
+    fun getAppList(@Suppress("UNUSED_PARAMETER") filterJson: String): String {
         return runBlocking {
             val apps = appScanner.scanAllApps()
             json.encodeToString(apps)

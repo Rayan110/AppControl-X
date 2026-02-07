@@ -296,7 +296,6 @@ class SystemMonitor @Inject constructor(
         return try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val storageStatsManager = context.getSystemService(Context.STORAGE_STATS_SERVICE) as StorageStatsManager
-                val storageManager = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
                 val uuid = StorageManager.UUID_DEFAULT
 
                 val pm = context.packageManager
