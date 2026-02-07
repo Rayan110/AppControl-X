@@ -38,7 +38,7 @@ export default function Settings() {
     accessLost,
     clearAccessLost
   } = useAppStore()
-  const { theme, toggleTheme } = useThemeStore()
+  const { theme, toggleTheme, resetSetup } = useThemeStore()
   const [openModal, setOpenModal] = useState<ModalType>(null)
   const [animationsEnabled, setAnimationsEnabled] = useState(true)
 
@@ -162,6 +162,27 @@ export default function Settings() {
               title="App Information"
               subtitle="Version, licenses, and more"
               onClick={() => setOpenModal('appInfo')}
+            />
+          </div>
+        </section>
+
+        {/* Reset Section */}
+        <section className="animate-fade-in-up stagger-3">
+          <h2 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3 px-1">
+            Danger Zone
+          </h2>
+          <div className="card overflow-hidden border-error/20">
+            <SettingItem
+              icon={RotateCcw}
+              iconColor="error"
+              title="Reset Setup"
+              subtitle="Return to the initial setup screen"
+              onClick={() => {
+                if (window.confirm('Are you sure you want to reset the setup? This will return you to the welcome screen.')) {
+                  resetSetup()
+                  window.location.href = '/'
+                }
+              }}
             />
           </div>
         </section>

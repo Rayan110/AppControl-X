@@ -13,6 +13,7 @@ interface ThemeState {
   setTheme: (theme: Theme) => void
   toggleTheme: () => void
   completeSetup: () => void
+  resetSetup: () => void
 }
 
 // Apply theme to DOM immediately
@@ -45,7 +46,8 @@ export const useThemeStore = create<ThemeState>()(
         set({ theme: newTheme })
         applyTheme(newTheme)
       },
-      completeSetup: () => set({ isFirstLaunch: false })
+      completeSetup: () => set({ isFirstLaunch: false }),
+      resetSetup: () => set({ isFirstLaunch: true })
     }),
     {
       name: 'appcontrolx-theme',

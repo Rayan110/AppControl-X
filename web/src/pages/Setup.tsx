@@ -89,7 +89,7 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
         <FeatureItem icon={Smartphone} text="Monitor system performance" />
       </div>
 
-      <button onClick={onNext} className="btn-primary w-full">
+      <button onClick={onNext} className="btn btn-primary w-full">
         Get Started
         <ChevronRight size={20} />
       </button>
@@ -151,7 +151,7 @@ function ModeStep({ mode, onNext }: { mode: string; onNext: () => void }) {
         </div>
       </div>
 
-      <button onClick={onNext} className="btn-primary w-full">
+      <button onClick={onNext} className="btn btn-primary w-full">
         Continue
         <ChevronRight size={20} />
       </button>
@@ -209,7 +209,7 @@ function ThemeStep({ theme, setTheme, onNext }: { theme: string; setTheme: (t: '
         </button>
       </div>
 
-      <button onClick={onNext} className="btn-primary w-full">
+      <button onClick={onNext} className="btn btn-primary w-full">
         Continue
         <ChevronRight size={20} />
       </button>
@@ -241,7 +241,7 @@ function ReadyStep({ onComplete }: { onComplete: () => void }) {
         </ul>
       </div>
 
-      <button onClick={onComplete} className="btn-primary w-full">
+      <button onClick={onComplete} className="btn btn-primary w-full">
         Start Using AppControlX
         <ChevronRight size={20} />
       </button>
