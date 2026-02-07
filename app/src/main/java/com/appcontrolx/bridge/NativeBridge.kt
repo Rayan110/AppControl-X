@@ -285,8 +285,10 @@ class NativeBridge @Inject constructor(
                 launchViaIntent(packageName, activityName)
             } else {
                 // Shell launch (can launch non-exported activities)
-                val result = shellManager.execute("am start -n $packageName/$activityName")
-                result.isSuccess
+                runBlocking {
+                    val result = shellManager.execute("am start -n $packageName/$activityName")
+                    result.isSuccess
+                }
             }
         } catch (e: Exception) {
             false
